@@ -16,3 +16,34 @@ yarn add repository-generic
 # Support
 
 This library is quite fresh, and maybe has bugs. Write me an **email** to *natashkinsash@gmail.com* and I will fix the bug in a few working days.
+
+# Quick start
+
+```typecript
+import { Db } from 'mongodb';
+import { RedisClient } from 'redis';
+import { Model, MongoRepository, ClassType } from "repository-generic";
+
+export class User implements Model {
+    public id: string;
+    @IsString()
+    @IsOptional()
+    public name?: string;
+    public createdAt: string;
+    public lastUpdateAt: string;
+    public version: number;
+}
+
+export class UserRepository extends MongoRepository<User> {
+    constructor(db: Db, redisClient: RedisClient) {
+        super(db, new UserCacheManager(redisClient));
+    }
+
+    protected getClass(): ClassType<User> {
+        return User;
+    }
+}
+
+
+
+```

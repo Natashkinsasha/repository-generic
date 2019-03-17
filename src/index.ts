@@ -7,6 +7,7 @@ import Repository from "./repository/Repository";
 import IMongoSpecification from "./specification/IMongoSpecification";
 import ISpecification from "./specification/ISpecification";
 import MongoDbHelper from "./helper/MongoDbHelper";
+import {ClassType, CreateModel, UpdateModel} from "./repository/MongoRepository"
 
 export {
     ICaherManager,
@@ -17,5 +18,8 @@ export {
     Repository,
     IMongoSpecification,
     ISpecification,
-    MongoDbHelper
+    MongoDbHelper,
+    ClassType,
+    CreateModel,
+    UpdateModel,
 }
