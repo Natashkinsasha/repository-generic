@@ -1,6 +1,8 @@
 repository-generic
 ================
 
+Repository base class for Node.JS. Currently only supports MongoDB.
+
 ## Installation
 
 Npm
@@ -19,7 +21,9 @@ This library is quite fresh, and maybe has bugs. Write me an **email** to *natas
 
 # Quick start
 
-```typecript
+This library can be use with JavaScript, but better use one with TypeScript.
+
+```typescript
 import { Db } from 'mongodb';
 import { RedisClient } from 'redis';
 import { Model, MongoRepository, ClassType } from "repository-generic";
