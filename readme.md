@@ -23,8 +23,9 @@ This library is quite fresh, and maybe has bugs. Write me an **email** to *natas
 import { Db } from 'mongodb';
 import { RedisClient } from 'redis';
 import { Model, MongoRepository, ClassType } from "repository-generic";
+import { IsOptional, IsString } from 'class-validator';
 
-export class User implements Model {
+class User implements Model {
     public id: string;
     @IsString()
     @IsOptional()
@@ -34,16 +35,14 @@ export class User implements Model {
     public version: number;
 }
 
-export class UserRepository extends MongoRepository<User> {
-    constructor(db: Db, redisClient: RedisClient) {
-        super(db, new UserCacheManager(redisClient));
+class UserRepository extends MongoRepository<User> {
+    constructor(db: Db) {
+        super(db);
     }
 
     protected getClass(): ClassType<User> {
         return User;
     }
 }
-
-
 
 ```
