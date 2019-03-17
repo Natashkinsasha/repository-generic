@@ -1,0 +1,51 @@
+{
+  "name": "repository-generic",
+  "version": "0.0.3",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "rimraf build && tsc -p tsconfig.build.json",
+    "start": "cross-env NODE_ENV=localhost ts-node-dev -r tsconfig-paths/register src/index.ts",
+    "test": "npm run build && cross-env NODE_ENV=test mocha test/**/*.ts"
+  },
+  "author": "Alex Natashkin <natashkinsasha@gmail.com>",
+  "license": "ISC",
+  "keywords": [
+    "repository",
+    "dao"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Natashkinsasha/repository-generic"
+  },
+  "bugs": {
+    "url": "https://github.com/Natashkinsasha/repository-generic/issues",
+    "email": "natashkinsasga@gmail.com"
+  },
+  "dependencies": {
+    "class-transformer": "^0.2.0",
+    "class-validator": "^0.9.1",
+    "cross-env": "^5.2.0",
+    "mocha": "^6.0.2",
+    "mongodb": "^3.1.13",
+    "redis": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/faker": "^4.1.5",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.11.3",
+    "chai": "^4.2.0",
+    "faker": "^4.1.0",
+    "ts-node": "^8.0.3",
+    "ts-node-dev": "^1.0.0-pre.32",
+    "tsconfig-paths": "^3.8.0",
+    "typescript": "^3.3.3333"
+  },
+  "peerDependencies": {
+    "redis": "^2.8.0",
+    "mongodb": "^3.1.13",
+    "@types/mongodb": "^3.1.19",
+    "@types/redis": "^2.8.11"
+  }
+}
