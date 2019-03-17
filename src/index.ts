@@ -1,4 +1,4 @@
-import ICaherManager from "./cache_manager/ICacheManager";
+import ICacheManager from "./cache_manager/ICacheManager";
 import RedisCacheManager from "./cache_manager/RedisCacheManager";
 import RepositoryValidationError from "./error/RepositoryValidationError";
 import CacheRedisMongoRepository from "./repository/CacheRedisMongoRepository";
@@ -10,7 +10,7 @@ import MongoDbHelper from "./helper/MongoDbHelper";
 import {ClassType, CreateModel, UpdateModel} from "./repository/MongoRepository"
 
 export {
-    ICaherManager,
+    ICacheManager,
     RedisCacheManager,
     RepositoryValidationError,
     CacheRedisMongoRepository,
