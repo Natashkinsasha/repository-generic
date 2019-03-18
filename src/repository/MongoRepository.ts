@@ -76,16 +76,51 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
     }
 
     public get(id: string): Promise<M | void> {
-        return this.findOne(new IdSpecification(id));
+        return this.getCollection()
+            .findOne({_id: new ObjectId(id)})
+            .then((e: M & { _id: ObjectId } | null) => {
+                if (e) {
+                    return this.pipe(e);
+                }
+                return;
+            });
     }
 
     public replace(model: M): Promise<void | M> {
         const {id, version, lastUpdateAt, createdAt, ...uModel} = model;
-        return this.findOneAndUpdate(new IdSpecification(id), uModel);
+        return this.getCollection()
+            .findOneAndUpdate(
+                {_id: new ObjectId(id)},
+                {
+                    $set: {...uModel, lastUpdateAt: new Date().toISOString()},
+                    $inc: {version: 1},
+                },
+                {returnOriginal: false}
+            )
+            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                if (!result.value) {
+                    return;
+                }
+                return this.pipe(result.value);
+            });
     }
 
     public update(id: string, model: UpdateModel<M>): Promise<M | void> {
-        return this.findOneAndUpdate(new IdSpecification(id), model);
+        return this.getCollection()
+            .findOneAndUpdate(
+                {_id: new ObjectId(id)},
+                {
+                    $set: {...model, lastUpdateAt: new Date().toISOString()},
+                    $inc: {version: 1},
+                },
+                {returnOriginal: false}
+            )
+            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                if (!result.value) {
+                    return;
+                }
+                return this.pipe(result.value);
+            });
     }
 
     public delete(id: string): Promise<boolean> {
