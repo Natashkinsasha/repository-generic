@@ -39,12 +39,12 @@ describe('Test UserRepository', () => {
     });
 
 
-    describe('#create', () => {
+    describe('#add', () => {
 
         it('1', (done) => {
             const user = createUser({});
             userRepository
-                .create(user)
+                .add(user)
                 .then((id: string) => {
                     expect(id).to.be.a('string');
                     done();
@@ -60,7 +60,7 @@ describe('Test UserRepository', () => {
         it('1', (done) => {
             const user = createUser({});
             userRepository
-                .create(user)
+                .add(user)
                 .then((id: string) => {
                     return userRepository.get(id);
                 })
@@ -83,7 +83,7 @@ describe('Test UserRepository', () => {
             const user = createUser({});
             const newName = faker.name.findName();
             userRepository
-                .create(user)
+                .add(user)
                 .then((id: string) => {
                     return userRepository.update(id, { name: newName });
                 })
@@ -101,7 +101,7 @@ describe('Test UserRepository', () => {
         it('1', (done) => {
             const user = createUser({});
             userRepository
-                .create(user)
+                .add(user)
                 .then((id: string) => {
                     return userRepository.get(id);
                 })
@@ -128,8 +128,8 @@ describe('Test UserRepository', () => {
         it('1', (done) => {
             Promise
                 .all([
-                    userRepository.create(createUser({})),
-                    userRepository.create(createUser({})),
+                    userRepository.add(createUser({})),
+                    userRepository.add(createUser({})),
                 ])
                 .then(() => {
                     return userRepository.find();
@@ -154,7 +154,7 @@ describe('Test UserRepository', () => {
 
         it('1', (done) => {
             userRepository
-                .create(createUser({}))
+                .add(createUser({}))
                 .then(async (id: string) => {
                     await userRepository.delete(id)
                     return userRepository.get(id);

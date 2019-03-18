@@ -1,6 +1,6 @@
 {
   "name": "repository-generic",
-  "version": "0.0.14",
+  "version": "0.0.16",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",

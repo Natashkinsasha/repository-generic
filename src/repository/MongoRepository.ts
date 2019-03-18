@@ -14,6 +14,7 @@ import IMongoSpecification from '../specification/IMongoSpecification';
 import Repository from './Repository';
 import RepositoryValidationError from "../error/RepositoryValidationError";
 import {NonFunctionPropertyNames, Omit} from "../util";
+import IdSpecification from "../specification/IdSpecification";
 
 
 interface MetaDate {
@@ -59,7 +60,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public create(model: CreateModel<M>): Promise<string> {
+    public add(model: CreateModel<M>): Promise<string> {
         return this.validateCreateModel(model)
             .then(() => {
                 return this.getCollection().insertOne({
@@ -75,56 +76,16 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
     }
 
     public get(id: string): Promise<M | void> {
-        return this.getCollection()
-            .findOne({_id: new ObjectId(id)})
-            .then((e: Entity<M> | null) => {
-                if (e) {
-                    return this.pipe(e);
-                }
-                return;
-            });
+        return this.findOne(new IdSpecification(id));
     }
 
     public replace(model: M): Promise<void | M> {
-        const {id, version, lastUpdateAt, ...tmp} = model;
-        const _id = new ObjectId(id);
-        return this.validateReplaceModel(model)
-            .then(() => {
-                return this.getCollection().findOneAndUpdate(
-                    {_id},
-                    {
-                        $set: {...tmp, lastUpdateAt: new Date().toISOString()},
-                        $inc: {version: 1},
-                    },
-                    {returnOriginal: false}
-                );
-            })
-            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                if (!result.value) {
-                    return;
-                }
-                return this.pipe(result.value);
-            });
+        const {id, version, lastUpdateAt, createdAt, ...uModel} = model;
+        return this.findOneAndUpdate(new IdSpecification(id), uModel);
     }
 
     public update(id: string, model: UpdateModel<M>): Promise<M | void> {
-        return this.validateUpdateModel(model)
-            .then(() => {
-                return this.getCollection().findOneAndUpdate(
-                    {_id: new ObjectId(id)},
-                    {
-                        $set: {...model, lastUpdateAt: new Date().toISOString()},
-                        $inc: {version: 1},
-                    },
-                    {returnOriginal: false}
-                );
-            })
-            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                if (!result.value) {
-                    return;
-                }
-                return this.pipe(result.value);
-            });
+        return this.findOneAndUpdate(new IdSpecification(id), model);
     }
 
     public delete(id: string): Promise<boolean> {
@@ -153,7 +114,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
 
     public findOne(specification: IMongoSpecification<M>): Promise<M | void> {
         return this.getCollection()
-            .findOne(specification)
+            .findOne(specification.specified())
             .then((e: M & { _id: ObjectId } | null) => {
                 if (e) {
                     return this.pipe(e);
@@ -165,7 +126,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
     public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<M | void> {
         return this.getCollection()
             .findOneAndUpdate(
-                specification,
+                specification.specified(),
                 {
                     $set: {...model, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
@@ -183,7 +144,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
     public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<void> {
         return this.getCollection()
             .updateMany(
-                specification,
+                specification.specified(),
                 {
                     $set: {...model, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
@@ -256,10 +217,10 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
 
     private buildFind(
         collection: Collection<Entity<M>>,
-        specification?: IMongoSpecification<Entity<M>>
+        specification?: IMongoSpecification<M>
     ): Cursor<Entity<M>> {
         if (specification) {
-            return this.getCollection().find(specification);
+            return this.getCollection().find(specification.specified());
         }
         return this.getCollection().find();
     }
