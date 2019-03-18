@@ -1,6 +1,6 @@
 {
   "name": "repository-generic",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -24,6 +24,7 @@
     "email": "natashkinsasga@gmail.com"
   },
   "dependencies": {
+    "@types/mongodb": "^3.1.22",
     "class-transformer": "^0.2.0",
     "class-validator": "^0.9.1",
     "cross-env": "^5.2.0",

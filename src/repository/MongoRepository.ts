@@ -6,9 +6,9 @@ import {
     Db,
     DeleteWriteOpResultObject,
     FilterQuery,
-    FindAndModifyWriteOpResultObject,
+    FindAndModifyWriteOpResultObject, IndexSpecification,
     InsertOneWriteOpResult,
-    ObjectId,
+    ObjectId, UpdateWriteOpResult,
 } from 'mongodb';
 import IMongoSpecification from '../specification/IMongoSpecification';
 import Repository from './Repository';
@@ -46,11 +46,17 @@ export declare interface ClassType<T> {
     new(...args: any[]): T;
 }
 
-export default abstract class MongoRepository<M extends Model> extends Repository<M,
-    FilterQuery<M>,
-    IMongoSpecification<M>> {
+export default abstract class MongoRepository<M extends Model> extends Repository<M, FilterQuery<M>, IMongoSpecification<M>> {
     protected constructor(private readonly db: Db) {
         super();
+    }
+
+    public createIndexes(indexSpecs: IndexSpecification[]): Promise<void> {
+        return this.getCollection()
+            .createIndexes(indexSpecs)
+            .then(() => {
+                return;
+            });
     }
 
     public create(model: CreateModel<M>): Promise<string> {
@@ -166,28 +172,24 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
                 },
                 {returnOriginal: false}
             )
-            .then((e: M & { _id: ObjectId } | null) => {
-                if (e) {
-                    return this.pipe(e);
+            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                if (!result.value) {
+                    return;
                 }
-                return;
+                return this.pipe(result.value);
             });
     }
 
-    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<M | void> {
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<void> {
         return this.getCollection()
-            .findAndUpdate(
+            .updateMany(
                 specification,
                 {
                     $set: {...model, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
-                {returnOriginal: false}
             )
-            .then((e: M & { _id: ObjectId } | null) => {
-                if (e) {
-                    return this.pipe(e);
-                }
+            .then(() => {
                 return;
             });
     }

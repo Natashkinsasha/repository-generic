@@ -2,9 +2,7 @@ import ISpecification from "../specification/ISpecification";
 
 
 export default abstract class Repository<E, Q, S extends ISpecification<Q>> {
-    public abstract create(entity: E): Promise<string>;
-
-    public abstract replace(e: E): Promise<E | void>;
+    public abstract create(entity: any): Promise<string>;
 
     public abstract update(id: string, o: any): Promise<E | void>;
 
