@@ -1,5 +1,5 @@
-import { plainToClass } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
+import {plainToClass} from 'class-transformer';
+import {validate, ValidationError} from 'class-validator';
 import {
     Collection,
     Cursor,
@@ -30,7 +30,8 @@ interface MongoEntity {
     _id?: ObjectId;
 }
 
-interface BaseEntity extends MetaDate, MongoEntity {}
+interface BaseEntity extends MetaDate, MongoEntity {
+}
 
 export type ModelPropertyNames = NonFunctionPropertyNames<Model>;
 
@@ -42,14 +43,12 @@ export type Entity<M extends Model> = CreateModel<M> & BaseEntity;
 
 
 export declare interface ClassType<T> {
-    new (...args: any[]): T;
+    new(...args: any[]): T;
 }
 
-export default abstract class MongoRepository<M extends Model> extends Repository<
-    M,
+export default abstract class MongoRepository<M extends Model> extends Repository<M,
     FilterQuery<M>,
-    IMongoSpecification<M>
-> {
+    IMongoSpecification<M>> {
     protected constructor(private readonly db: Db) {
         super();
     }
@@ -71,7 +70,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
 
     public get(id: string): Promise<M | void> {
         return this.getCollection()
-            .findOne({ _id: new ObjectId(id) })
+            .findOne({_id: new ObjectId(id)})
             .then((e: Entity<M> | null) => {
                 if (e) {
                     return this.pipe(e);
@@ -81,17 +80,17 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
     }
 
     public replace(model: M): Promise<void | M> {
-        const { id, version, lastUpdateAt, ...tmp } = model;
+        const {id, version, lastUpdateAt, ...tmp} = model;
         const _id = new ObjectId(id);
         return this.validateReplaceModel(model)
             .then(() => {
                 return this.getCollection().findOneAndUpdate(
-                    { _id },
+                    {_id},
                     {
-                        $set: { ...tmp, lastUpdateAt: new Date().toISOString() },
-                        $inc: { version: 1 },
+                        $set: {...tmp, lastUpdateAt: new Date().toISOString()},
+                        $inc: {version: 1},
                     },
-                    { returnOriginal: false }
+                    {returnOriginal: false}
                 );
             })
             .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
@@ -106,12 +105,12 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
         return this.validateUpdateModel(model)
             .then(() => {
                 return this.getCollection().findOneAndUpdate(
-                    { _id: new ObjectId(id) },
+                    {_id: new ObjectId(id)},
                     {
-                        $set: { ...model, lastUpdateAt: new Date().toISOString() },
-                        $inc: { version: 1 },
+                        $set: {...model, lastUpdateAt: new Date().toISOString()},
+                        $inc: {version: 1},
                     },
-                    { returnOriginal: false }
+                    {returnOriginal: false}
                 );
             })
             .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
@@ -124,7 +123,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
 
     public delete(id: string): Promise<boolean> {
         return this.getCollection()
-            .deleteOne({ _id: new ObjectId(id) })
+            .deleteOne({_id: new ObjectId(id)})
             .then((result: DeleteWriteOpResultObject) => {
                 return !!result.deletedCount;
             });
@@ -146,9 +145,45 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public findOneByQuery(specification: IMongoSpecification<M>): Promise<M | void> {
+    public findOne(specification: IMongoSpecification<M>): Promise<M | void> {
         return this.getCollection()
             .findOne(specification)
+            .then((e: M & { _id: ObjectId } | null) => {
+                if (e) {
+                    return this.pipe(e);
+                }
+                return;
+            });
+    }
+
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<M | void> {
+        return this.getCollection()
+            .findOneAndUpdate(
+                specification,
+                {
+                    $set: {...model, lastUpdateAt: new Date().toISOString()},
+                    $inc: {version: 1},
+                },
+                {returnOriginal: false}
+            )
+            .then((e: M & { _id: ObjectId } | null) => {
+                if (e) {
+                    return this.pipe(e);
+                }
+                return;
+            });
+    }
+
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<M | void> {
+        return this.getCollection()
+            .findAndUpdate(
+                specification,
+                {
+                    $set: {...model, lastUpdateAt: new Date().toISOString()},
+                    $inc: {version: 1},
+                },
+                {returnOriginal: false}
+            )
             .then((e: M & { _id: ObjectId } | null) => {
                 if (e) {
                     return this.pipe(e);
@@ -183,9 +218,9 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
         if (!entity._id) {
             throw new Error('Haven`t _id in object');
         }
-        const { _id, ...object } = entity;
+        const {_id, ...object} = entity;
         const id = _id.toHexString();
-        return plainToClass(this.getClass(), { id, ...object });
+        return plainToClass(this.getClass(), {id, ...object});
     }
 
     private validateCreateModel(model: CreateModel<M>): Promise<void> {
@@ -207,7 +242,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
     }
 
     private validateUpdateModel(model: UpdateModel<M>): Promise<void> {
-        return validate(plainToClass(this.getClass(), model), { skipMissingProperties: true }).then(
+        return validate(plainToClass(this.getClass(), model), {skipMissingProperties: true}).then(
             (errors: ReadonlyArray<ValidationError>) => {
                 if (errors.length) {
                     throw new RepositoryValidationError(errors);
