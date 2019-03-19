@@ -3,10 +3,11 @@ import * as chai from "chai";
 import { plainToClass } from 'class-transformer';
 import { ObjectId } from 'bson';
 import User from "./user/User";
+import {CreateModel} from "../src";
 
 const { expect } = chai;
 
-export function createUser(user: Partial<User>): User{
+export function createCreateUser(user: Partial<User>): CreateModel<User>{
     return plainToClass(User,{
         roles: [],
         name: faker.name.findName(),

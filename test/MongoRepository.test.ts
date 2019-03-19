@@ -2,7 +2,7 @@ import * as mongodb from "mongodb";
 import * as redis from "redis";
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
-import {createUser, validateUser} from "./util";
+import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
@@ -43,7 +43,7 @@ describe('Test UserRepository', () => {
     describe('#add', () => {
 
         it('1', (done) => {
-            const user = createUser({});
+            const user = createCreateUser({});
             userRepository
                 .add(user)
                 .then((id: string) => {
@@ -59,7 +59,7 @@ describe('Test UserRepository', () => {
     describe('#get', () => {
 
         it('1', (done) => {
-            const user = createUser({});
+            const user = createCreateUser({});
             userRepository
                 .add(user)
                 .then((id: string) => {
@@ -78,10 +78,47 @@ describe('Test UserRepository', () => {
 
     });
 
+    describe('#findOne', () => {
+
+        it('1', (done) => {
+            const name = faker.name.findName();
+            const user = createCreateUser({name});
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository.findOne(new NameUserSpecification(name));
+                })
+                .then((newUser: User) => {
+                    validateUser(newUser, { ...user, version: 0 });
+                    done();
+                })
+                .catch(done);
+        });
+
+    });
+
+    describe('#findAndUpdate', () => {
+
+        it('1', (done) => {
+            const name = faker.name.findName();
+            const user = createCreateUser({name});
+            userRepository
+                .add(user)
+                .then(() => {
+                    return userRepository.findAndUpdate(new NameUserSpecification(name), { name: faker.name.findName() });
+                })
+                .then(() => {
+                    done();
+                })
+                .catch(done);
+        });
+
+    });
+
     describe('#update', () => {
 
         it('1', (done) => {
-            const user = createUser({});
+            const user = createCreateUser({});
             const newName = faker.name.findName();
             userRepository
                 .add(user)
@@ -97,10 +134,32 @@ describe('Test UserRepository', () => {
 
     });
 
+    describe('#replace', () => {
+
+        it('1', (done) => {
+            const user = createCreateUser({});
+            const newName = faker.name.findName();
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository.get(id);
+                })
+                .then((user: User) => {
+                    return userRepository.replace({...user, name: newName});
+                })
+                .then((newUser: User) => {
+                    validateUser(newUser, { ...user, name: newName, version: 1 });
+                    done();
+                })
+                .catch(done);
+        });
+
+    });
+
     describe('#delete', () => {
 
         it('1', (done) => {
-            const user = createUser({});
+            const user = createCreateUser({});
             userRepository
                 .add(user)
                 .then((id: string) => {
@@ -129,8 +188,8 @@ describe('Test UserRepository', () => {
         it('1', (done) => {
             Promise
                 .all([
-                    userRepository.add(createUser({})),
-                    userRepository.add(createUser({})),
+                    userRepository.add(createCreateUser({})),
+                    userRepository.add(createCreateUser({})),
                 ])
                 .then(() => {
                     return userRepository.find();
@@ -153,8 +212,8 @@ describe('Test UserRepository', () => {
             const name = faker.name.findName();
             Promise
                 .all([
-                    userRepository.add(createUser({name})),
-                    userRepository.add(createUser({})),
+                    userRepository.add(createCreateUser({name})),
+                    userRepository.add(createCreateUser({})),
                 ])
                 .then(() => {
                     return userRepository.find(new NameUserSpecification(name));
@@ -173,7 +232,7 @@ describe('Test UserRepository', () => {
 
         it('1', (done) => {
             userRepository
-                .add(createUser({}))
+                .add(createCreateUser({}))
                 .then(async (id: string) => {
                     await userRepository.delete(id)
                     return userRepository.get(id);
