@@ -1,4 +1,4 @@
-import {plainToClass} from 'class-transformer';
+import {classToPlain, plainToClass} from 'class-transformer';
 import {validate, ValidationError} from 'class-validator';
 import {
     Collection,
@@ -8,13 +8,12 @@ import {
     FilterQuery,
     FindAndModifyWriteOpResultObject, IndexSpecification,
     InsertOneWriteOpResult,
-    ObjectId, UpdateWriteOpResult,
+    ObjectId,
 } from 'mongodb';
 import IMongoSpecification from '../specification/IMongoSpecification';
 import Repository from './Repository';
 import RepositoryValidationError from "../error/RepositoryValidationError";
 import {NonFunctionPropertyNames, Omit} from "../util";
-import IdSpecification from "../specification/IdSpecification";
 
 
 interface MetaDate {
