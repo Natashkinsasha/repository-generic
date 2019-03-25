@@ -7,6 +7,7 @@ import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import NameUserSpecification from "./user/NameUserSpecification";
+import Purchase from "./user/Purchase";
 
 
 describe('Test UserRepository', () => {
@@ -53,13 +54,23 @@ describe('Test UserRepository', () => {
                 .catch(done);
         });
 
+        it('2', (done) => {
+            userRepository
+                .add({purchase: [new Purchase("")]})
+                .catch((err: Error) => {
+                    expect(err.name).to.equal("RepositoryValidationError");
+                    done();
+                })
+                .catch(done);
+        });
+
     });
 
 
     describe('#get', () => {
 
         it('1', (done) => {
-            const user = createCreateUser({});
+            const user = createCreateUser({purchase: [new Purchase(new Date().toISOString())]});
             userRepository
                 .add(user)
                 .then((id: string) => {

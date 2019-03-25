@@ -1,5 +1,8 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import "reflect-metadata"
+import {IsInt, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {Type} from "class-transformer";
 import {Model} from "../../src/repository/MongoRepository";
+import Purchase from "./Purchase";
 
 
 export default class User implements Model {
@@ -10,4 +13,9 @@ export default class User implements Model {
     public createdAt: string;
     public lastUpdateAt: string;
     public version: number;
+    @Type(() => Purchase)
+    @ValidateNested({
+        each: true,
+    })
+    public purchase: Purchase[];
 }

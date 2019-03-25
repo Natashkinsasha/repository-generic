@@ -1,6 +1,6 @@
 {
   "name": "repository-generic",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -39,6 +39,7 @@
     "@types/node": "^11.11.3",
     "chai": "^4.2.0",
     "faker": "^4.1.0",
+    "reflect-metadata": "^0.1.13",
     "ts-node": "^8.0.3",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.8.0",
