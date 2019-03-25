@@ -27,7 +27,7 @@ This library can be use with JavaScript, but better use one with TypeScript.
 import "reflect-metadata"
 import { Db } from 'mongodb';
 import { RedisClient } from 'redis';
-import { Model, MongoRepository, ClassType } from "repository-generic";
+import { Model, MongoRepository, ClassType, IMongoSpecification, Entity, FilterQuery, RepositoryValidationError } from "repository-generic";
 import { IsOptional, IsString, IsISO8601, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from "class-transformer";
 
@@ -35,6 +35,10 @@ import { Type } from "class-transformer";
 class Purchase {
     @IsISO8601()
     public createdAt: string;
+
+    constructor(createdAt: string) {
+        this.createdAt = createdAt;
+    }
 }
 
 class User implements Model {
@@ -62,5 +66,43 @@ class UserRepository extends MongoRepository<User> {
         return User;
     }
 }
+
+class NameUserSpecification implements IMongoSpecification<User>{
+
+    private readonly name: string;
+
+    constructor(name: string){
+        this.name = name;
+    }
+
+    public specified(): FilterQuery<Entity<User>> {
+        return {
+            name: this.name,
+        };
+    }
+
+}
+
+
+const db = await this.getDb();
+
+const userRepository = new UserRepository(db);
+
+const id = await userRepository.add({name: "Test", purchase:[]})
+
+userRepository.add({purchase: [new Purchase("")]})
+    .catch((err: RepositoryValidationError) => {})
+
+await userRepository.get(id);
+
+await userRepository.findOne(new NameUserSpecification(name));
+
+await userRepository.find(new NameUserSpecification(name));
+
+await userRepository.update(id, { name: "Test3" });
+
+await userRepository.findAndUpdate(new NameUserSpecification(name), { name: "Test2" });
+
+await userRepository.delete(id);
 
 ```
