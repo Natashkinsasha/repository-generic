@@ -1,18 +1,18 @@
 import ISpecification from "../specification/ISpecification";
 
 
-export default abstract class Repository<E, Q, S extends ISpecification<Q>> {
-    public abstract add(entity: any): Promise<string>;
+export default interface Repository<E, Q, S extends ISpecification<Q>> {
+    add(entity: any): Promise<string>;
 
-    public abstract update(id: string, entity: any): Promise<E | void>;
+    update(id: string, entity: any): Promise<E | void>;
 
-    public abstract get(id: string): Promise<E | void>;
+    get(id: string): Promise<E | void>;
 
-    public abstract delete(id: string): Promise<boolean>;
+    delete(id: string): Promise<boolean>;
 
-    public abstract clean(): Promise<number>;
+    clean(): Promise<number>;
 
-    public abstract find(
+    find(
         specification?: S,
         skip?: number,
         limit?: number,

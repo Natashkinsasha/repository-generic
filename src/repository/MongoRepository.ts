@@ -1,14 +1,15 @@
 import {classToPlain, plainToClass} from 'class-transformer';
 import {validate, ValidationError} from 'class-validator';
 import {
-    Collection,
+    ClientSession,
+    Collection, CollectionInsertOneOptions, CommonOptions,
     Cursor,
     Db,
     DeleteWriteOpResultObject,
     FilterQuery,
-    FindAndModifyWriteOpResultObject, IndexSpecification,
-    InsertOneWriteOpResult,
-    ObjectId,
+    FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, FindOneOptions, IndexSpecification,
+    InsertOneWriteOpResult, MongoClient,
+    ObjectId, UpdateManyOptions,
 } from 'mongodb';
 import IMongoSpecification from '../specification/IMongoSpecification';
 import Repository from './Repository';
@@ -46,9 +47,25 @@ export declare interface ClassType<T> {
     new(...args: any[]): T;
 }
 
-export default abstract class MongoRepository<M extends Model> extends Repository<M, FilterQuery<M>, IMongoSpecification<M>> {
-    protected constructor(private readonly db: Db) {
-        super();
+export default abstract class MongoRepository<M extends Model> implements Repository<M, FilterQuery<M>, IMongoSpecification<M>> {
+    protected constructor(private readonly db: Db, private client: MongoClient) {
+    }
+
+    public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {
+        const session = this.client.startSession();
+        session.startTransaction();
+        return cb(session)
+            .then((result: T) => {
+                return session.commitTransaction()
+                    .then(() => {
+                        return result;
+                    });
+            }, (err: Error) => {
+                return session.abortTransaction()
+                    .then(() => {
+                        throw err;
+                    })
+            });
     }
 
     public createIndexes(indexSpecs: IndexSpecification[]): Promise<void> {
@@ -59,7 +76,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public add(model: CreateModel<M>): Promise<string> {
+    public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<string> {
         return this.validateCreateModel(model)
             .then(() => {
                 return this.getCollection().insertOne({
@@ -67,16 +84,16 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
                     createdAt: new Date().toISOString(),
                     lastUpdateAt: new Date().toISOString(),
                     ...model,
-                });
+                }, options);
             })
             .then((result: InsertOneWriteOpResult) => {
                 return result.insertedId.toHexString();
             });
     }
 
-    public get(id: string): Promise<M | void> {
+    public get(id: string, options?: FindOneOptions): Promise<M | void> {
         return this.getCollection()
-            .findOne({_id: new ObjectId(id)})
+            .findOne({_id: new ObjectId(id)}, options)
             .then((e: M & { _id: ObjectId } | null) => {
                 if (e) {
                     return this.pipe(e);
@@ -85,7 +102,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public replace(model: M): Promise<void | M> {
+    public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
         const {id, version, lastUpdateAt, createdAt, ...uModel} = model;
         return this.getCollection()
             .findOneAndUpdate(
@@ -94,7 +111,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
                     $set: {...uModel, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
-                {returnOriginal: false}
+                {returnOriginal: false, ...options}
             )
             .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
                 if (!result.value) {
@@ -104,7 +121,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public update(id: string, model: UpdateModel<M>): Promise<M | void> {
+    public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
         return this.getCollection()
             .findOneAndUpdate(
                 {_id: new ObjectId(id)},
@@ -112,7 +129,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
                     $set: {...model, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
-                {returnOriginal: false}
+                {returnOriginal: false, ...options}
             )
             .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
                 if (!result.value) {
@@ -122,9 +139,9 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public delete(id: string): Promise<boolean> {
+    public delete(id: string, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
         return this.getCollection()
-            .deleteOne({_id: new ObjectId(id)})
+            .deleteOne({_id: new ObjectId(id)}, options)
             .then((result: DeleteWriteOpResultObject) => {
                 return !!result.deletedCount;
             });
@@ -134,10 +151,11 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
         specification?: IMongoSpecification<M>,
         skip: number = 0,
         limit: number = Infinity,
-        sort: Map<string, number> = new Map()
+        sort: Map<string, number> = new Map(),
+        options?: FindOneOptions
     ): Promise<ReadonlyArray<M>> {
         return this.buildLimit(
-            this.buildSkip(this.buildSort(this.buildFind(this.getCollection(), specification), sort), skip),
+            this.buildSkip(this.buildSort(this.buildFind(this.getCollection(), specification, options), sort), skip),
             limit
         )
             .toArray()
@@ -146,7 +164,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public findOne(specification: IMongoSpecification<M>): Promise<M | void> {
+    public findOne(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<M | void> {
         return this.getCollection()
             .findOne(specification.specified())
             .then((e: M & { _id: ObjectId } | null) => {
@@ -157,7 +175,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<M | void> {
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
         return this.getCollection()
             .findOneAndUpdate(
                 specification.specified(),
@@ -165,7 +183,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
                     $set: {...model, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
-                {returnOriginal: false}
+                {returnOriginal: false, ...options}
             )
             .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
                 if (!result.value) {
@@ -175,7 +193,7 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
             });
     }
 
-    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>): Promise<void> {
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {
         return this.getCollection()
             .updateMany(
                 specification.specified(),
@@ -183,15 +201,16 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
                     $set: {...model, lastUpdateAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
+                options,
             )
             .then(() => {
                 return;
             });
     }
 
-    public clean(): Promise<number> {
+    public clean(options?: CommonOptions): Promise<number> {
         return this.getCollection()
-            .deleteMany({})
+            .deleteMany({}, options)
             .then((resultObject: DeleteWriteOpResultObject) => {
                 return resultObject.result.n || 0;
             });
@@ -251,12 +270,10 @@ export default abstract class MongoRepository<M extends Model> extends Repositor
 
     private buildFind(
         collection: Collection<Entity<M>>,
-        specification?: IMongoSpecification<M>
+        specification?: IMongoSpecification<M>,
+        options?: FindOneOptions
     ): Cursor<Entity<M>> {
-        if (specification) {
-            return this.getCollection().find(specification.specified());
-        }
-        return this.getCollection().find();
+        return this.getCollection().find(specification || {}, options);
     }
 
     private buildSkip(cursor: Cursor<Entity<M>>, skip: number): Cursor<Entity<M>> {

@@ -1,18 +1,26 @@
-import { Db } from 'mongodb';
+import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient} from 'mongodb';
 import RedisCacheManager from '../cache_manager/RedisCacheManager';
 import MongoRepository, { Model, UpdateModel } from './MongoRepository';
 
 export default abstract class CacheRedisMongoRepository<M extends Model> extends MongoRepository<M> {
-    protected constructor(db: Db, private redisCacheManage: RedisCacheManager<M>) {
-        super(db);
+    protected constructor(db: Db, client: MongoClient, private redisCacheManage: RedisCacheManager<M>) {
+        super(db, client);
     }
 
-    public get(id: string): Promise<M | void> {
+    public get(id: string, options?: FindOneOptions): Promise<M | void> {
+        if(options && options.session){
+            return super.get(id, options).then(async (model: M | void) => {
+                if (model) {
+                    await this.redisCacheManage.save(model);
+                }
+                return model;
+            });
+        }
         return this.redisCacheManage.get(id).then((model: M | void) => {
             if (model) {
                 return model;
             }
-            return super.get(id).then(async (model: M | void) => {
+            return super.get(id, options).then(async (model: M | void) => {
                 if (model) {
                     await this.redisCacheManage.save(model);
                 }
@@ -21,11 +29,11 @@ export default abstract class CacheRedisMongoRepository<M extends Model> extends
         });
     }
 
-    public replace(model: M): Promise<void | M> {
+    public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
         return this.redisCacheManage
             .delete(model.id)
             .then(() => {
-                return super.replace(model);
+                return super.replace(model, options);
             })
             .then(async (model: M | void) => {
                 if (model) {
@@ -35,11 +43,11 @@ export default abstract class CacheRedisMongoRepository<M extends Model> extends
             });
     }
 
-    public update(id: string, model: UpdateModel<M>): Promise<M | void> {
+    public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
         return this.redisCacheManage
             .delete(id)
             .then(() => {
-                return super.update(id, model);
+                return super.update(id, model, options);
             })
             .then(async (model: M | void) => {
                 if (model) {
@@ -49,9 +57,9 @@ export default abstract class CacheRedisMongoRepository<M extends Model> extends
             });
     }
 
-    public delete(id: string): Promise<boolean> {
+    public delete(id: string, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
         return this.redisCacheManage.delete(id).then(() => {
-            return super.delete(id);
+            return super.delete(id, options);
         });
     }
 }

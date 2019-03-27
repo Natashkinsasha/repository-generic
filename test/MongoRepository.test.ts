@@ -12,7 +12,7 @@ import Purchase from "./user/Purchase";
 
 describe('Test UserRepository', () => {
 
-    const { expect } = chai;
+    const {expect} = chai;
 
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
@@ -22,12 +22,12 @@ describe('Test UserRepository', () => {
 
     before(async () => {
         mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
-            .then((client: mongodb.MongoClient)=>{
+            .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
             });
         redisClient = redis.createClient("redis://localhost:6379");
-        userRepository = new UserRepository(db, redisClient);
+        userRepository = new UserRepository(db, mongoClient, redisClient);
     });
 
     after(async () => {
@@ -77,11 +77,11 @@ describe('Test UserRepository', () => {
                     return userRepository.get(id);
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, { ...user, version: 0 });
+                    validateUser(newUser, {...user, version: 0});
                     return userRepository.get(newUser.id);
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, { ...user, version: 0 });
+                    validateUser(newUser, {...user, version: 0});
                     done();
                 })
                 .catch(done);
@@ -100,7 +100,7 @@ describe('Test UserRepository', () => {
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, { ...user, version: 0 });
+                    validateUser(newUser, {...user, version: 0});
                     done();
                 })
                 .catch(done);
@@ -116,7 +116,7 @@ describe('Test UserRepository', () => {
             userRepository
                 .add(user)
                 .then(() => {
-                    return userRepository.findAndUpdate(new NameUserSpecification(name), { name: faker.name.findName() });
+                    return userRepository.findAndUpdate(new NameUserSpecification(name), {name: faker.name.findName()});
                 })
                 .then(() => {
                     done();
@@ -134,10 +134,10 @@ describe('Test UserRepository', () => {
             userRepository
                 .add(user)
                 .then((id: string) => {
-                    return userRepository.update(id, { name: newName });
+                    return userRepository.update(id, {name: newName});
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, { ...user, name: newName, version: 1 });
+                    validateUser(newUser, {...user, name: newName, version: 1});
                     done();
                 })
                 .catch(done);
@@ -159,7 +159,7 @@ describe('Test UserRepository', () => {
                     return userRepository.replace({...user, name: newName});
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, { ...user, name: newName, version: 1 });
+                    validateUser(newUser, {...user, name: newName, version: 1});
                     done();
                 })
                 .catch(done);
@@ -178,7 +178,7 @@ describe('Test UserRepository', () => {
                 })
                 .then((newUser: User) => {
 
-                    validateUser(newUser, { ...user, version: 0 });
+                    validateUser(newUser, {...user, version: 0});
                     return userRepository.delete(newUser.id)
                         .then(() => {
                             // validateUser(deletedUser, { ...user, version: 0 });
@@ -205,7 +205,7 @@ describe('Test UserRepository', () => {
                 .then(() => {
                     return userRepository.find();
                 })
-                .then((users: User[])=>{
+                .then((users: User[]) => {
                     expect(users).to.have.lengthOf(2);
                     return userRepository.delete(users[0].id);
                 })
@@ -229,7 +229,7 @@ describe('Test UserRepository', () => {
                 .then(() => {
                     return userRepository.find(new NameUserSpecification(name));
                 })
-                .then((users: User[])=>{
+                .then((users: User[]) => {
                     expect(users).to.have.lengthOf(1);
                     validateUser(users[0], {name});
                     done();
@@ -255,6 +255,50 @@ describe('Test UserRepository', () => {
                 })
                 .catch(done);
         });
+
+    });
+
+    describe('#transaction', () => {
+
+
+        it.skip('1', (done) => {
+            const user = createCreateUser({});
+            const newName = faker.name.findName();
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository
+                        .transaction(async (session) => {
+                            await userRepository.update(id, {name: newName}, {session})
+                            return userRepository.get(id, {session});
+                        });
+                })
+                .then((newUser: User) => {
+                    expect(newUser).to.be.a('object')
+                    newUser && validateUser(newUser, {...user, name: newName, version: 1});
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            const user = createCreateUser({});
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository
+                        .transaction(async (session) => {
+                            await userRepository.get(id, {session})
+                            await userRepository.update(id, {name: faker.name.findName()});
+                            await userRepository.update(id, {name: faker.name.findName()}, {session})
+                        });
+                })
+                .catch(() => {
+                    done();
+                })
+                .catch(done);
+        });
+
 
     });
 
