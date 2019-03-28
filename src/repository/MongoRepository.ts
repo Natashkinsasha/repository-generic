@@ -1,4 +1,4 @@
-import {classToPlain, plainToClass} from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 import {validate, ValidationError} from 'class-validator';
 import {
     ClientSession,
@@ -12,7 +12,6 @@ import {
 } from 'mongodb';
 import IMongoSpecification from '../specification/IMongoSpecification';
 import RepositoryValidationError from "../error/RepositoryValidationError";
-import {Omit} from "../util";
 import IMongoRepository, {CreateModel, Entity, Model, UpdateModel} from "./IMongoRepository";
 import IRepositoryOptions from "./IRepositoryOptions";
 
@@ -129,7 +128,7 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
                 return this.getCollection()
                     .findOneAndUpdate(
                         {_id: new ObjectId(model.id)},
-                        this.getUpdateObject(model),
+                        this.getReplaceObject(model),
                         {returnOriginal: false, ...options}
                     )
                     .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
@@ -185,6 +184,17 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     }
 
     public delete(id: string, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
+        if (this.options.softDelete) {
+            return this.getCollection()
+                .findOneAndUpdate(
+                    {_id: new ObjectId(id)},
+                    {$set: {isDeleted: true}},
+                    {returnOriginal: false, ...options}
+                )
+                .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                    return !!result.value;
+                })
+        }
         return this.getCollection()
             .deleteOne({_id: new ObjectId(id)}, options)
             .then((result: DeleteWriteOpResultObject) => {
