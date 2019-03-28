@@ -1,6 +1,6 @@
 import {ObjectId} from "mongodb";
 import IMongoSpecification, {FilterQuery} from "./IMongoSpecification";
-import {Entity, Model} from "../repository/MongoRepository";
+import {Entity, Model} from "../repository/IMongoRepository";
 
 
 

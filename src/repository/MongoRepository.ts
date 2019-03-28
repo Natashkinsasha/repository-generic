@@ -14,16 +14,20 @@ import IMongoSpecification from '../specification/IMongoSpecification';
 import RepositoryValidationError from "../error/RepositoryValidationError";
 import {Omit} from "../util";
 import IMongoRepository, {CreateModel, Entity, Model, UpdateModel} from "./IMongoRepository";
-
-
+import IRepositoryOptions from "./IRepositoryOptions";
 
 
 export declare interface ClassType<T> {
     new(...args: any[]): T;
 }
 
-export default abstract class MongoRepository<M extends Model> implements IMongoRepository<M> {
-    protected constructor(private readonly db: Db, private client: MongoClient) {
+
+export default abstract class MongoRepository<M extends { id: string }> implements IMongoRepository<M> {
+
+    private readonly options: IRepositoryOptions;
+
+    protected constructor(private readonly db: Db, private client: MongoClient, options: Partial<IRepositoryOptions> = {}) {
+        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, ...options};
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {
@@ -51,13 +55,30 @@ export default abstract class MongoRepository<M extends Model> implements IMongo
             });
     }
 
+    public createAdditionalProperty() {
+        return Object.entries(this.options)
+            .reduce((additionalProperty, [key, value]) => {
+                if (key === "version" && value) {
+                    return {...additionalProperty, version: 0};
+                }
+                if (key === "createdAt" && value) {
+                    return {...additionalProperty, createdAt: new Date().toISOString()};
+                }
+                if (key === "lastUpdatedAt" && value) {
+                    return {...additionalProperty, lastUpdatedAt: new Date().toISOString()};
+                }
+                if (key === "softDelete" && value) {
+                    return {...additionalProperty, isDeleted: false};
+                }
+                return additionalProperty;
+            }, {});
+    }
+
     public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<string> {
-        return this.validateCreateModel(model)
+        return this.validateCreateModel({...model, ...this.createAdditionalProperty()})
             .then(() => {
                 return this.getCollection().insertOne({
-                    version: 0,
-                    createdAt: new Date().toISOString(),
-                    lastUpdateAt: new Date().toISOString(),
+                    ...this.createAdditionalProperty(),
                     ...model,
                 }, options);
             })
@@ -77,17 +98,38 @@ export default abstract class MongoRepository<M extends Model> implements IMongo
             });
     }
 
+
+    private getReplaceObject(model: M) {
+        const {version, ...uModel} = {version: 0, ...model};
+        return {
+            $set: {
+                ...uModel, ...Object.entries(this.options)
+                    .reduce((additionalProperty, [key, value]) => {
+                        if (key === "lastUpdatedAt" && value) {
+                            return {...additionalProperty, lastUpdatedAt: new Date().toISOString()};
+                        }
+                        return additionalProperty;
+                    }, {})
+            },
+            $inc: {
+                ...Object.entries(this.options)
+                    .reduce((additionalProperty, [key, value]) => {
+                        if (key === "version" && value) {
+                            return {...additionalProperty, version: 1};
+                        }
+                        return additionalProperty;
+                    }, {})
+            },
+        };
+    }
+
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
-        const {id, version, lastUpdateAt, createdAt, ...uModel} = model;
         return this.validateReplaceModel(model)
             .then(() => {
                 return this.getCollection()
                     .findOneAndUpdate(
-                        {_id: new ObjectId(id)},
-                        {
-                            $set: {...uModel, lastUpdateAt: new Date().toISOString()},
-                            $inc: {version: 1},
-                        },
+                        {_id: new ObjectId(model.id)},
+                        this.getUpdateObject(model),
                         {returnOriginal: false, ...options}
                     )
                     .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
@@ -99,16 +141,38 @@ export default abstract class MongoRepository<M extends Model> implements IMongo
             });
     }
 
+    private getUpdateObject(model: UpdateModel<M>) {
+        const {version, ...uModel} = {version: 0, ...model};
+        return {
+            $set: {
+                ...uModel, ...Object.entries(this.options)
+                    .reduce((additionalProperty, [key, value]) => {
+                        if (key === "lastUpdatedAt" && value) {
+                            return {...additionalProperty, lastUpdatedAt: new Date().toISOString()};
+                        }
+                        return additionalProperty;
+                    }, {})
+            },
+            $inc: {
+                ...Object.entries(this.options)
+                    .reduce((additionalProperty, [key, value]) => {
+                        if (key === "version" && value) {
+                            return {...additionalProperty, version: 1};
+                        }
+                        return additionalProperty;
+                    }, {})
+            },
+        };
+    }
+
+
     public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
         return this.validateUpdateModel(model)
             .then(() => {
                 return this.getCollection()
                     .findOneAndUpdate(
                         {_id: new ObjectId(id)},
-                        {
-                            $set: {...model, lastUpdateAt: new Date().toISOString()},
-                            $inc: {version: 1},
-                        },
+                        this.getUpdateObject(model),
                         {returnOriginal: false, ...options}
                     )
                     .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
@@ -161,7 +225,7 @@ export default abstract class MongoRepository<M extends Model> implements IMongo
             .findOneAndUpdate(
                 specification.specified(),
                 {
-                    $set: {...model, lastUpdateAt: new Date().toISOString()},
+                    $set: {...model, lastUpdatedAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
                 {returnOriginal: false, ...options}
@@ -179,7 +243,7 @@ export default abstract class MongoRepository<M extends Model> implements IMongo
             .updateMany(
                 specification.specified(),
                 {
-                    $set: {...model, lastUpdateAt: new Date().toISOString()},
+                    $set: {...model, lastUpdatedAt: new Date().toISOString()},
                     $inc: {version: 1},
                 },
                 options,
@@ -229,7 +293,7 @@ export default abstract class MongoRepository<M extends Model> implements IMongo
         });
     }
 
-    private validateReplaceModel(model: Omit<M, 'id' | 'version' | 'lastUpdateAt'>): Promise<void> {
+    private validateReplaceModel(model: M): Promise<void> {
         return validate(plainToClass(this.getClass(), model)).then((errors: ReadonlyArray<ValidationError>) => {
             if (errors.length) {
                 throw new RepositoryValidationError(errors);

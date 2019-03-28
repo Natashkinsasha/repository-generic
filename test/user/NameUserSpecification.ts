@@ -1,6 +1,6 @@
 import User from "./User";
 import IMongoSpecification, {FilterQuery} from "../../src/specification/IMongoSpecification"
-import {Entity} from "../../src/repository/MongoRepository";
+import {Entity} from "../../src/repository/IMongoRepository";
 
 export default class NameUserSpecification implements IMongoSpecification<User>{
 

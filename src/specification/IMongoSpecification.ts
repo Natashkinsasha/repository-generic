@@ -6,4 +6,4 @@ export type FilterQuery<T> = {
     [P in keyof T]?: T[P] | Condition<T, P>;
 };
 
-export default interface IMongoSpecification<E extends Model> extends ISpecification<FilterQuery<Entity<E>>> {}
+export default interface IMongoSpecification<E> extends ISpecification<FilterQuery<Entity<E>>> {}

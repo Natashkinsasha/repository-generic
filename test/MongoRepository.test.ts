@@ -27,7 +27,7 @@ describe('Test UserRepository', () => {
                 return client;
             });
         redisClient = redis.createClient("redis://localhost:6379");
-        userRepository = new UserRepository(db, mongoClient, redisClient);
+        userRepository = new UserRepository(db, mongoClient, redisClient, {version: true, createdAt: true, lastUpdatedAt: true});
     });
 
     after(async () => {

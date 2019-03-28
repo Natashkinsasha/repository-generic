@@ -1,10 +1,12 @@
 import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient} from 'mongodb';
 import RedisCacheManager from '../cache_manager/RedisCacheManager';
-import MongoRepository, { Model, UpdateModel } from './MongoRepository';
+import { Model, UpdateModel } from './IMongoRepository';
+import MongoRepository from "./MongoRepository";
+import IRepositoryOptions from "./IRepositoryOptions";
 
-export default abstract class CacheRedisMongoRepository<M extends Model> extends MongoRepository<M> {
-    protected constructor(db: Db, client: MongoClient, private redisCacheManage: RedisCacheManager<M>) {
-        super(db, client);
+export default abstract class CacheRedisMongoRepository<M extends { id: string }> extends MongoRepository<M> {
+    protected constructor(db: Db, client: MongoClient, private redisCacheManage: RedisCacheManager<M>, options?: Partial<IRepositoryOptions>) {
+        super(db, client, options);
     }
 
     public get(id: string, options?: FindOneOptions): Promise<M | void> {

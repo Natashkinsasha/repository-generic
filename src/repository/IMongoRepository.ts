@@ -8,37 +8,25 @@ import {
     IndexSpecification, ObjectId, UpdateManyOptions
 } from "mongodb";
 import IMongoSpecification from "../specification/IMongoSpecification";
-import {NonFunctionPropertyNames, Omit} from "../util";
+import {Subtract} from "../util";
 
 
-interface MetaDate {
+export interface Model {
+    id: string;
     version: number;
     createdAt: string;
-    lastUpdateAt: string;
+    lastUpdatedAt: string;
+    isDeleted: boolean;
 }
 
-export interface Model extends MetaDate {
-    id: string;
-}
+export type CreateModel<M> = Subtract<M, Model>;
 
-interface MongoEntity {
-    _id?: ObjectId;
-}
+export type UpdateModel<M> = Partial<CreateModel<M>>;
 
-interface BaseEntity extends MetaDate, MongoEntity {
-}
-
-export type ModelPropertyNames = NonFunctionPropertyNames<Model>;
-
-export type CreateModel<M extends Model> = Omit<M, ModelPropertyNames>;
-
-export type UpdateModel<M extends Model> = Partial<CreateModel<M>>;
-
-export type Entity<M extends Model> = CreateModel<M> & BaseEntity;
+export type Entity<M> = CreateModel<M> & {_id?: ObjectId};
 
 
-export default interface IMongoRepository<M extends Model> extends IRepository<M, FilterQuery<M>, IMongoSpecification<M>>{
-
+export default interface IMongoRepository<M> extends IRepository<M, FilterQuery<M>, IMongoSpecification<M>>{
     transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T>;
     createIndexes(indexSpecs: IndexSpecification[]): Promise<void>;
     add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<string>;

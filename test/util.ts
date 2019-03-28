@@ -33,7 +33,7 @@ export function validateUser(user: User, expectUser?: Partial<User>): void{
     user.createdAt && expect(user.createdAt).to.be.a('string');
     expectUser && expectUser.createdAt && expect(user.createdAt).to.equal(expectUser.createdAt);
 
-    user.lastUpdateAt && expect(user.lastUpdateAt).to.be.a('string');
-    expectUser && expectUser.lastUpdateAt && expect(user.lastUpdateAt).to.equal(expectUser.lastUpdateAt);
+    user.lastUpdatedAt && expect(user.lastUpdatedAt).to.be.a('string');
+    expectUser && expectUser.lastUpdatedAt && expect(user.lastUpdatedAt).to.equal(expectUser.lastUpdatedAt);
 
 }
