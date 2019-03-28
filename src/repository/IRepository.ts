@@ -1,7 +1,7 @@
 import ISpecification from "../specification/ISpecification";
 
 
-export default interface Repository<E, Q, S extends ISpecification<Q>> {
+export default interface IRepository<E, Q, S extends ISpecification<Q>> {
     add(entity: any): Promise<string>;
 
     update(id: string, entity: any): Promise<E | void>;

@@ -3,12 +3,13 @@ import RedisCacheManager from "./cache_manager/RedisCacheManager";
 import RepositoryValidationError from "./error/RepositoryValidationError";
 import CacheRedisMongoRepository from "./repository/CacheRedisMongoRepository";
 import MongoRepository from "./repository/MongoRepository";
-import Repository from "./repository/Repository";
+import IRepository from "./repository/IRepository";
 import IMongoSpecification from "./specification/IMongoSpecification";
 import ISpecification from "./specification/ISpecification";
 import MongoDbHelper from "./helper/MongoDbHelper";
-import {ClassType, CreateModel, UpdateModel} from "./repository/MongoRepository"
-import {FilterQuery }from "./specification/IMongoSpecification";
+import {ClassType} from "./repository/MongoRepository"
+import {CreateModel, UpdateModel} from "./repository/IMongoRepository"
+import {FilterQuery} from "./specification/IMongoSpecification";
 
 export {
     ICacheManager,
@@ -16,7 +17,7 @@ export {
     RepositoryValidationError,
     CacheRedisMongoRepository,
     MongoRepository,
-    Repository,
+    IRepository,
     IMongoSpecification,
     ISpecification,
     MongoDbHelper,

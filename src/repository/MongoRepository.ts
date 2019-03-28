@@ -6,48 +6,23 @@ import {
     Cursor,
     Db,
     DeleteWriteOpResultObject,
-    FilterQuery,
     FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, FindOneOptions, IndexSpecification,
     InsertOneWriteOpResult, MongoClient,
     ObjectId, UpdateManyOptions,
 } from 'mongodb';
 import IMongoSpecification from '../specification/IMongoSpecification';
-import Repository from './Repository';
 import RepositoryValidationError from "../error/RepositoryValidationError";
-import {NonFunctionPropertyNames, Omit} from "../util";
+import {Omit} from "../util";
+import IMongoRepository, {CreateModel, Entity, Model, UpdateModel} from "./IMongoRepository";
 
 
-interface MetaDate {
-    version: number;
-    createdAt: string;
-    lastUpdateAt: string;
-}
-
-export interface Model extends MetaDate {
-    id: string;
-}
-
-interface MongoEntity {
-    _id?: ObjectId;
-}
-
-interface BaseEntity extends MetaDate, MongoEntity {
-}
-
-export type ModelPropertyNames = NonFunctionPropertyNames<Model>;
-
-export type CreateModel<M extends Model> = Omit<M, ModelPropertyNames>;
-
-export type UpdateModel<M extends Model> = Partial<CreateModel<M>>;
-
-export type Entity<M extends Model> = CreateModel<M> & BaseEntity;
 
 
 export declare interface ClassType<T> {
     new(...args: any[]): T;
 }
 
-export default abstract class MongoRepository<M extends Model> implements Repository<M, FilterQuery<M>, IMongoSpecification<M>> {
+export default abstract class MongoRepository<M extends Model> implements IMongoRepository<M> {
     protected constructor(private readonly db: Db, private client: MongoClient) {
     }
 
@@ -104,38 +79,44 @@ export default abstract class MongoRepository<M extends Model> implements Reposi
 
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
         const {id, version, lastUpdateAt, createdAt, ...uModel} = model;
-        return this.getCollection()
-            .findOneAndUpdate(
-                {_id: new ObjectId(id)},
-                {
-                    $set: {...uModel, lastUpdateAt: new Date().toISOString()},
-                    $inc: {version: 1},
-                },
-                {returnOriginal: false, ...options}
-            )
-            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                if (!result.value) {
-                    return;
-                }
-                return this.pipe(result.value);
+        return this.validateReplaceModel(model)
+            .then(() => {
+                return this.getCollection()
+                    .findOneAndUpdate(
+                        {_id: new ObjectId(id)},
+                        {
+                            $set: {...uModel, lastUpdateAt: new Date().toISOString()},
+                            $inc: {version: 1},
+                        },
+                        {returnOriginal: false, ...options}
+                    )
+                    .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                        if (!result.value) {
+                            return;
+                        }
+                        return this.pipe(result.value);
+                    });
             });
     }
 
     public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
-        return this.getCollection()
-            .findOneAndUpdate(
-                {_id: new ObjectId(id)},
-                {
-                    $set: {...model, lastUpdateAt: new Date().toISOString()},
-                    $inc: {version: 1},
-                },
-                {returnOriginal: false, ...options}
-            )
-            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                if (!result.value) {
-                    return;
-                }
-                return this.pipe(result.value);
+        return this.validateUpdateModel(model)
+            .then(() => {
+                return this.getCollection()
+                    .findOneAndUpdate(
+                        {_id: new ObjectId(id)},
+                        {
+                            $set: {...model, lastUpdateAt: new Date().toISOString()},
+                            $inc: {version: 1},
+                        },
+                        {returnOriginal: false, ...options}
+                    )
+                    .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                        if (!result.value) {
+                            return;
+                        }
+                        return this.pipe(result.value);
+                    });
             });
     }
 

@@ -1,6 +1,6 @@
 import {Condition} from 'mongodb';
 import ISpecification from './ISpecification';
-import {Entity, Model} from "../repository/MongoRepository";
+import {Entity, Model} from "../repository/IMongoRepository";
 
 export type FilterQuery<T> = {
     [P in keyof T]?: T[P] | Condition<T, P>;
