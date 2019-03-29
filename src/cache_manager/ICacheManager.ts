@@ -4,4 +4,6 @@ export default interface ICacheManager<T> {
     save(object: T);
 
     delete(id: string);
+
+    deleteAll();
 }

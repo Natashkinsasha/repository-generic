@@ -1,10 +1,11 @@
 import {classToPlain, plainToClass} from 'class-transformer';
-import { RedisClient } from 'redis';
-import { ClassType } from '../repository/MongoRepository';
+import {RedisClient} from 'redis';
+import {ClassType} from '../repository/MongoRepository';
 import ICacheManager from './ICacheManager';
 
 export default abstract class RedisCacheManager<T extends { id: string }> implements ICacheManager<T> {
-    constructor(private readonly redisClient: RedisClient) {}
+    constructor(private readonly redisClient: RedisClient) {
+    }
 
     public delete(id: string): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -47,9 +48,28 @@ export default abstract class RedisCacheManager<T extends { id: string }> implem
         });
     }
 
+    public deleteAll(): Promise<void> {
+        const key = `${this.getCollectionName()}:*`
+        return new Promise((resolve, reject) => {
+            return this.redisClient.keys(key, (err: Error | null, keys: string[]) => {
+                if (err) {
+                    return reject(err);
+                }
+                return Promise
+                    .all(keys.map((key: string) => (this.delete(key))))
+                    .then(() => {
+                        return resolve()
+                    })
+                    .catch(reject);
+            });
+        })
+    }
+
     protected abstract getClass(): ClassType<T>;
 
     protected getCollectionName(): string {
         return this.constructor.name.toLowerCase().split('rediscachemanager')[0];
     }
+
+
 }
