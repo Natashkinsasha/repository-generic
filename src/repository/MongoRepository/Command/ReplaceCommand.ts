@@ -15,6 +15,23 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
 
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+        if (repositoryOptions.softDelete) {
+            return this.validateReplaceModel(this.model, clazz)
+                .then(() => {
+                    return collection
+                        .findOneAndUpdate(
+                            {_id: new ObjectId(this.model.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]},
+                            this.getReplaceObject(this.model, repositoryOptions),
+                            {returnOriginal: false, ...this.options}
+                        )
+                        .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                            if (!result.value) {
+                                return;
+                            }
+                            return MongoRepository.pipe(result.value, clazz);
+                        });
+                });
+        }
         return this.validateReplaceModel(this.model, clazz)
             .then(() => {
                 return collection

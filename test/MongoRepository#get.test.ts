@@ -101,6 +101,22 @@ describe('Test UserRepository#add', () => {
                 .catch(done);
         });
 
+        it('2', (done) => {
+            const name = faker.name.findName();
+            const user = createCreateUser({name});
+            userRepository
+                .add(user)
+                .then(async (id: string) => {
+                    await userRepository.delete(id);
+                    return userRepository.get(id);
+                })
+                .then((newUser: User | void) => {
+                    expect(newUser).to.be.a('undefined');
+                    done();
+                })
+                .catch(done);
+        });
+
     });
 
 });

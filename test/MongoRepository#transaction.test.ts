@@ -6,17 +6,16 @@ import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import NameUserSpecification from "./user/NameUserSpecification";
 import Purchase from "./user/Purchase";
+import NameUserSpecification from "./user/NameUserSpecification";
 
 
-describe('Test UserRepository', () => {
+describe('Test UserRepository#add', () => {
 
     const {expect} = chai;
 
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
-    let userRepository: UserRepository;
     let redisClient: redis.RedisClient;
 
 
@@ -27,7 +26,6 @@ describe('Test UserRepository', () => {
                 return client;
             });
         redisClient = redis.createClient("redis://localhost:6379");
-        userRepository = new UserRepository(db, mongoClient, redisClient, {version: true, createdAt: true, lastUpdatedAt: true});
     });
 
     after(async () => {
@@ -41,69 +39,16 @@ describe('Test UserRepository', () => {
     });
 
 
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
 
-    describe('#findAndUpdate', () => {
-
-        it('1', (done) => {
-            const name = faker.name.findName();
-            const user = createCreateUser({name});
-            userRepository
-                .add(user)
-                .then(() => {
-                    return userRepository.findAndUpdate(new NameUserSpecification(name), {name: faker.name.findName()});
-                })
-                .then(() => {
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
-    describe('#update', () => {
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            const newName = faker.name.findName();
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    return userRepository.update(id, {name: newName});
-                })
-                .then((newUser: User) => {
-                    validateUser(newUser, {...user, name: newName, version: 1});
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
-    describe('#replace', () => {
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            const newName = faker.name.findName();
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
-                })
-                .then((user: User) => {
-                    return userRepository.replace({...user, name: newName});
-                })
-                .then((newUser: User) => {
-                    validateUser(newUser, {...user, name: newName, version: 1});
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
-
-    describe('#transaction', () => {
-
+        let userRepository: UserRepository;
+        before(() => {
+            userRepository = new UserRepository(db, mongoClient, redisClient, {
+                version: true,
+                createdAt: true,
+                lastUpdatedAt: true
+            });
+        })
 
         it.skip('1', (done) => {
             const user = createCreateUser({});
@@ -142,7 +87,6 @@ describe('Test UserRepository', () => {
                 })
                 .catch(done);
         });
-
 
     });
 

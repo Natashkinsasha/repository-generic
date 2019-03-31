@@ -52,20 +52,14 @@ describe('Test UserRepository#add', () => {
 
         it('1', (done) => {
             const user = createCreateUser({});
+            const newName = faker.name.findName();
             userRepository
                 .add(user)
                 .then((id: string) => {
-                    expect(id).to.be.a('string');
-                    done();
+                    return userRepository.update(id, {name: newName});
                 })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            userRepository
-                .add({purchase: [new Purchase("")]})
-                .catch((err: Error) => {
-                    expect(err.name).to.equal("RepositoryValidationError");
+                .then((newUser: User) => {
+                    validateUser(newUser, {...user, name: newName, version: 1});
                     done();
                 })
                 .catch(done);
@@ -87,35 +81,22 @@ describe('Test UserRepository#add', () => {
         })
 
         it('1', (done) => {
-            const name = faker.name.findName();
-            const user = createCreateUser({name});
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    return userRepository.findOne(new NameUserSpecification(name));
-                })
-                .then((newUser: User) => {
-                    validateUser(newUser, {...user, version: 0, isDeleted: false});
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            const name = faker.name.findName();
-            const user = createCreateUser({name});
+            const user = createCreateUser({});
+            const newName = faker.name.findName();
             userRepository
                 .add(user)
                 .then(async (id: string) => {
                     await userRepository.delete(id);
-                    return userRepository.findOne(new NameUserSpecification(name));
+                    return userRepository.update(id, {name: newName});
                 })
-                .then((newUser: User | void) => {
+                .then((newUser: User) => {
                     expect(newUser).to.be.a('undefined');
                     done();
                 })
                 .catch(done);
         });
+
+
 
     });
 

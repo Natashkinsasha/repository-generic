@@ -52,25 +52,21 @@ describe('Test UserRepository#add', () => {
 
         it('1', (done) => {
             const user = createCreateUser({});
+            const newName = faker.name.findName();
             userRepository
                 .add(user)
                 .then((id: string) => {
-                    expect(id).to.be.a('string');
+                    return userRepository.get(id);
+                })
+                .then((user: User) => {
+                    return userRepository.replace({...user, name: newName});
+                })
+                .then((newUser: User) => {
+                    validateUser(newUser, {...user, name: newName, version: 1});
                     done();
                 })
                 .catch(done);
         });
-
-        it('2', (done) => {
-            userRepository
-                .add({purchase: [new Purchase("")]})
-                .catch((err: Error) => {
-                    expect(err.name).to.equal("RepositoryValidationError");
-                    done();
-                })
-                .catch(done);
-        });
-
     });
 
 
@@ -87,35 +83,25 @@ describe('Test UserRepository#add', () => {
         })
 
         it('1', (done) => {
-            const name = faker.name.findName();
-            const user = createCreateUser({name});
+            const user = createCreateUser({});
+            const newName = faker.name.findName();
             userRepository
                 .add(user)
                 .then((id: string) => {
-                    return userRepository.findOne(new NameUserSpecification(name));
+                    return userRepository.get(id);
+                })
+                .then(async (user: User) => {
+                    await userRepository.delete(user.id);
+                    return userRepository.replace({...user, name: newName});
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, {...user, version: 0, isDeleted: false});
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            const name = faker.name.findName();
-            const user = createCreateUser({name});
-            userRepository
-                .add(user)
-                .then(async (id: string) => {
-                    await userRepository.delete(id);
-                    return userRepository.findOne(new NameUserSpecification(name));
-                })
-                .then((newUser: User | void) => {
                     expect(newUser).to.be.a('undefined');
                     done();
                 })
                 .catch(done);
         });
+
+
 
     });
 

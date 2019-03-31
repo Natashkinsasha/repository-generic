@@ -16,6 +16,23 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
 
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+        if (repositoryOptions.softDelete) {
+            return this.validateUpdateModel(this.model, clazz)
+                .then(() => {
+                    return collection
+                        .findOneAndUpdate(
+                            {_id: new ObjectId(this.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]},
+                            this.getUpdateObject(this.model, repositoryOptions),
+                            {returnOriginal: false, ...this.options}
+                        )
+                        .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                            if (!result.value) {
+                                return;
+                            }
+                            return MongoRepository.pipe(result.value, clazz);
+                        });
+                });
+        }
         return this.validateUpdateModel(this.model, clazz)
             .then(() => {
                 return collection
