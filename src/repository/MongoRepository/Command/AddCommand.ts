@@ -17,6 +17,13 @@ export default class AddCommand<M> implements ICommand<M, string> {
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<string> {
         return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
             .then(() => {
+                if (repositoryOptions.softDelete) {
+                    return collection.insertOne({
+                        ...this.createAdditionalProperty(repositoryOptions),
+                        ...this.model,
+                        isDeleted: false,
+                    }, this.options);
+                }
                 return collection.insertOne({
                     ...this.createAdditionalProperty(repositoryOptions),
                     ...this.model,

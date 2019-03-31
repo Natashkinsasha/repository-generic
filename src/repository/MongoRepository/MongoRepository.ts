@@ -11,16 +11,20 @@ import {
     ObjectId, UpdateManyOptions,
 } from 'mongodb';
 import IMongoSpecification from '../../specification/IMongoSpecification';
-import RepositoryValidationError from "../../error/RepositoryValidationError";
-import IMongoRepository, {CreateModel, Entity, Model, UpdateModel} from "../IMongoRepository";
+import IMongoRepository, {CreateModel, Entity, UpdateModel} from "../IMongoRepository";
 import IRepositoryOptions from "../IRepositoryOptions";
-import ICommand from "./Command/ICommand";
 import AddCommand from "./Command/AddCommand";
 import GetCommand from "./Command/GetCommand";
 import ReplaceCommand from "./Command/ReplaceCommand";
 import UpdateCommand from "./Command/UpdateCommand";
 import DeleteCommand from "./Command/DeleteCommand";
 import FindCommand from "./Command/FindCommand";
+import FindOneCommand from "./Command/FindOneCommand";
+import FindOneAndUpdateCommand from "./Command/FindOneAndUpdateCommand";
+import FindAndUpdateCommand from "./Command/FindAndUpdateCommand";
+import CleanCommand from "./Command/CleanCommand";
+import TransactionCommand from "./Command/TransactionCommand";
+import CreateIndexCommand from "./Command/CreateIndexCommand";
 
 
 export declare interface ClassType<T> {
@@ -37,28 +41,11 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {
-        const session = this.client.startSession();
-        session.startTransaction();
-        return cb(session)
-            .then((result: T) => {
-                return session.commitTransaction()
-                    .then(() => {
-                        return result;
-                    });
-            }, (err: Error) => {
-                return session.abortTransaction()
-                    .then(() => {
-                        throw err;
-                    })
-            });
+        return new TransactionCommand(this.client, cb).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public createIndexes(indexSpecs: IndexSpecification[]): Promise<void> {
-        return this.getCollection()
-            .createIndexes(indexSpecs)
-            .then(() => {
-                return;
-            });
+        return new CreateIndexCommand(indexSpecs).execute(this.getCollection(), this.getClass(), this.options);
     }
 
 
@@ -98,55 +85,19 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     }
 
     public findOne(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<M | void> {
-        return this.getCollection()
-            .findOne(specification.specified())
-            .then((e: M & { _id: ObjectId } | null) => {
-                if (e) {
-                    return MongoRepository.pipe(e, this.getClass());
-                }
-                return;
-            });
+        return new FindOneCommand(specification, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
-        return this.getCollection()
-            .findOneAndUpdate(
-                specification.specified(),
-                {
-                    $set: {...model, lastUpdatedAt: new Date().toISOString()},
-                    $inc: {version: 1},
-                },
-                {returnOriginal: false, ...options}
-            )
-            .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                if (!result.value) {
-                    return;
-                }
-                return MongoRepository.pipe(result.value, this.getClass());
-            });
+        return new FindOneAndUpdateCommand(specification, model).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {
-        return this.getCollection()
-            .updateMany(
-                specification.specified(),
-                {
-                    $set: {...model, lastUpdatedAt: new Date().toISOString()},
-                    $inc: {version: 1},
-                },
-                options,
-            )
-            .then(() => {
-                return;
-            });
+        return new FindAndUpdateCommand(specification, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public clean(options?: CommonOptions): Promise<number> {
-        return this.getCollection()
-            .deleteMany({}, options)
-            .then((resultObject: DeleteWriteOpResultObject) => {
-                return resultObject.result.n || 0;
-            });
+        return new CleanCommand(options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public drop(): Promise<boolean> {
@@ -171,8 +122,5 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         const id = _id.toHexString();
         return plainToClass(clazz, {id, ...object});
     }
-
-
-
 
 }

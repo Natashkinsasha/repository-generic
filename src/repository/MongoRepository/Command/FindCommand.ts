@@ -12,11 +12,11 @@ export default class FindCommand<M> implements ICommand<M, ReadonlyArray<M>> {
                 private skip: number = 0,
                 private limit: number = Infinity,
                 private sort: Map<string, number> = new Map(),
-                private options?: FindOneOptions) {}
+                private options?: FindOneOptions) {
+    }
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<ReadonlyArray<M>> {
-        return this.buildLimit(
-            this.buildSkip(this.buildSort(this.buildFind(collection, this.specification, this.options), this.sort), this.skip), this.limit)
+        return this.buildLimit(this.buildSkip(this.buildSort(this.buildFind(repositoryOptions, collection, this.specification, this.options), this.sort), this.skip), this.limit)
             .toArray()
             .then((array: ReadonlyArray<Entity<M>>) => {
                 return array.map((entity: Entity<M>) => MongoRepository.pipe(entity, clazz));
@@ -25,11 +25,16 @@ export default class FindCommand<M> implements ICommand<M, ReadonlyArray<M>> {
 
 
     private buildFind(
+        repositoryOptions: IRepositoryOptions,
         collection: Collection<Entity<M>>,
         specification?: IMongoSpecification<M>,
         options?: FindOneOptions
     ): Cursor<Entity<M>> {
-        return collection.find(specification || {}, options);
+        const query = specification && specification.specified() || {};
+        if (repositoryOptions.softDelete) {
+            return collection.find({...query, $or: [{idDeleted: false}, {idDeleted: {$exists: false}}]}, options);
+        }
+        return collection.find(query, options);
     }
 
     private buildSkip(cursor: Cursor<Entity<M>>, skip: number): Cursor<Entity<M>> {
