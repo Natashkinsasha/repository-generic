@@ -16,24 +16,19 @@ export default class AddCommand<M> implements ICommand<M, string> {
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<string> {
         if (repositoryOptions.softDelete) {
+            const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions), isDeleted: false};
             return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions), isDeleted: false}, clazz)
                 .then(()=>{
-                    return collection.insertOne({
-                        ...this.createAdditionalProperty(repositoryOptions),
-                        ...this.model,
-                        isDeleted: false,
-                    }, this.options);
+                    return collection.insertOne(model, this.options);
                 })
                 .then((result: InsertOneWriteOpResult) => {
                     return result.insertedId.toHexString();
                 });
         }
+        const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions)};
         return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
             .then(() => {
-                return collection.insertOne({
-                    ...this.createAdditionalProperty(repositoryOptions),
-                    ...this.model,
-                }, this.options);
+                return collection.insertOne(model, this.options);
             })
             .then((result: InsertOneWriteOpResult) => {
                 return result.insertedId.toHexString();
@@ -49,7 +44,7 @@ export default class AddCommand<M> implements ICommand<M, string> {
         });
     }
 
-    private createAdditionalProperty(options: IRepositoryOptions) {
+    private createAdditionalProperty(options: IRepositoryOptions): {version?: number, createdAt?: string, lastUpdatedAt?: string, softDelete?: boolean} {
         return Object.entries(options)
             .reduce((additionalProperty, [key, value]) => {
                 if (key === "version" && value) {
