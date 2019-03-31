@@ -10,6 +10,16 @@ export default class GetCommand<M> implements ICommand<M, M | void>{
     constructor(private id: string, private  options?: CollectionInsertOneOptions){}
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
+        if (repositoryOptions.softDelete) {
+            return collection
+                .findOne({_id: new ObjectId(this.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]}, this.options)
+                .then((e: M & { _id: ObjectId } | null) => {
+                    if (e) {
+                        return MongoRepository.pipe(e, clazz);
+                    }
+                    return;
+                });
+        }
         return collection
             .findOne({_id: new ObjectId(this.id)}, this.options)
             .then((e: M & { _id: ObjectId } | null) => {

@@ -32,7 +32,8 @@ export default class FindCommand<M> implements ICommand<M, ReadonlyArray<M>> {
     ): Cursor<Entity<M>> {
         const query = specification && specification.specified() || {};
         if (repositoryOptions.softDelete) {
-            return collection.find({...query, $or: [{idDeleted: false}, {idDeleted: {$exists: false}}]}, options);
+            const or = query['$or'] || [];
+            return collection.find({...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]}, options);
         }
         return collection.find(query, options);
     }

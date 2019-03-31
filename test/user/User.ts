@@ -1,5 +1,5 @@
 import "reflect-metadata"
-import {IsInt, IsISO8601, IsNumber, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {IsBoolean, IsInt, IsISO8601, IsNumber, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {Type} from "class-transformer";
 import {Model} from "../../src/repository/IMongoRepository";
 import Purchase from "./Purchase";
@@ -21,4 +21,7 @@ export default class User {
         each: true,
     })
     public purchase: Purchase[];
+    @IsBoolean()
+    @IsOptional()
+    public isDeleted?: boolean;
 }

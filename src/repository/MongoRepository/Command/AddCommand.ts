@@ -15,15 +15,21 @@ export default class AddCommand<M> implements ICommand<M, string> {
     }
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<string> {
-        return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
-            .then(() => {
-                if (repositoryOptions.softDelete) {
+        if (repositoryOptions.softDelete) {
+            return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions), isDeleted: false}, clazz)
+                .then(()=>{
                     return collection.insertOne({
                         ...this.createAdditionalProperty(repositoryOptions),
                         ...this.model,
                         isDeleted: false,
                     }, this.options);
-                }
+                })
+                .then((result: InsertOneWriteOpResult) => {
+                    return result.insertedId.toHexString();
+                });
+        }
+        return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
+            .then(() => {
                 return collection.insertOne({
                     ...this.createAdditionalProperty(repositoryOptions),
                     ...this.model,
