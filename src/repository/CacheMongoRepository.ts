@@ -1,8 +1,9 @@
-import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient} from 'mongodb';
-import { UpdateModel } from './IMongoRepository';
-import MongoRepository from "./MongoRepository";
+import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions} from 'mongodb';
+import {UpdateModel} from './IMongoRepository';
+import MongoRepository from "./MongoRepository/MongoRepository";
 import IRepositoryOptions from "./IRepositoryOptions";
 import ICacheManager from "../cache_manager/ICacheManager";
+import IMongoSpecification from "../specification/IMongoSpecification";
 
 export default abstract class CacheMongoRepository<M extends { id: string }> extends MongoRepository<M> {
     protected constructor(db: Db, client: MongoClient, private cacheManage: ICacheManager<M>, options?: Partial<IRepositoryOptions>) {
@@ -10,7 +11,7 @@ export default abstract class CacheMongoRepository<M extends { id: string }> ext
     }
 
     public get(id: string, options?: FindOneOptions): Promise<M | void> {
-        if(options && options.session){
+        if (options && options.session) {
             return super.get(id, options).then(async (model: M | void) => {
                 if (model) {
                     await this.cacheManage.save(model);
@@ -29,6 +30,24 @@ export default abstract class CacheMongoRepository<M extends { id: string }> ext
                 return model;
             });
         });
+    }
+
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void>{
+        return this.cacheManage.deleteAll()
+            .then(() => {
+                return super.findAndUpdate(specification, model, options);
+            });
+    }
+
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<M | void>{
+        return super.findOneAndUpdate(specification, model, options)
+            .then(async (model: M | void)=>{
+                if(model){
+                    await this.cacheManage.save(model);
+                    return model;
+                }
+                return;
+            })
     }
 
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
@@ -63,5 +82,19 @@ export default abstract class CacheMongoRepository<M extends { id: string }> ext
         return this.cacheManage.delete(id).then(() => {
             return super.delete(id, options);
         });
+    }
+
+    public drop(): Promise<boolean> {
+        return this.cacheManage.deleteAll()
+            .then(() => {
+                return super.drop();
+            });
+    }
+
+    public clean(options?: CommonOptions): Promise<number> {
+        return this.cacheManage.deleteAll()
+            .then(() => {
+                return super.clean(options);
+            });
     }
 }

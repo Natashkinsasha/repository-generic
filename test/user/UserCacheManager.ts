@@ -1,6 +1,6 @@
 
 import User from "./User";
-import {ClassType} from "../../src/repository/MongoRepository";
+import {ClassType} from "../../src/repository/MongoRepository/MongoRepository";
 import RedisCacheManager from "../../src/cache_manager/RedisCacheManager";
 
 

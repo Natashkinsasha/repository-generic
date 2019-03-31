@@ -1,7 +1,7 @@
 import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient} from 'mongodb';
 import RedisCacheManager from '../cache_manager/RedisCacheManager';
 import { Model, UpdateModel } from './IMongoRepository';
-import MongoRepository from "./MongoRepository";
+import MongoRepository from "./MongoRepository/MongoRepository";
 import IRepositoryOptions from "./IRepositoryOptions";
 import CacheMongoRepository from "./CacheMongoRepository";
 

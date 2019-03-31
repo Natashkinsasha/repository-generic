@@ -1,9 +1,9 @@
 export default interface ICacheManager<T> {
-    get(id: string);
+    get(id: string): Promise<T | void>;
 
-    save(object: T);
+    save(object: T): Promise<T>;
 
-    delete(id: string);
+    delete(id: string): Promise<void>;
 
-    deleteAll();
+    deleteAll(): Promise<void>;
 }

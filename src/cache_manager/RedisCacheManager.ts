@@ -1,6 +1,6 @@
 import {classToPlain, plainToClass} from 'class-transformer';
 import {RedisClient} from 'redis';
-import {ClassType} from '../repository/MongoRepository';
+import {ClassType} from '../repository/MongoRepository/MongoRepository';
 import ICacheManager from './ICacheManager';
 
 export default abstract class RedisCacheManager<T extends { id: string }> implements ICacheManager<T> {
@@ -33,7 +33,7 @@ export default abstract class RedisCacheManager<T extends { id: string }> implem
         });
     }
 
-    public save(object: T): Promise<void> {
+    public save(object: T): Promise<T> {
         return new Promise((resolve, reject) => {
             return this.redisClient.set(
                 `${this.getCollectionName()}:${object.id}`,
@@ -42,7 +42,7 @@ export default abstract class RedisCacheManager<T extends { id: string }> implem
                     if (err) {
                         return reject(err);
                     }
-                    return resolve();
+                    return resolve(object);
                 }
             );
         });
