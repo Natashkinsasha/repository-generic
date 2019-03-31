@@ -10,7 +10,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
 
     constructor(private specification: IMongoSpecification<M>, private model: UpdateModel<M>, private options?: FindOneAndUpdateOption){}
 
-    execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
         const query = this.specification && this.specification.specified() || {};
         if (repositoryOptions.softDelete) {
             const or = query['$or'] || [];

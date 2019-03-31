@@ -27,8 +27,8 @@ This library can be use with JavaScript, but better use one with TypeScript.
 import "reflect-metadata"
 import { Db } from 'mongodb';
 import { RedisClient } from 'redis';
-import { Model, MongoRepository, ClassType, IMongoSpecification, Entity, FilterQuery, RepositoryValidationError } from "repository-generic";
-import { IsOptional, IsString, IsISO8601, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { MongoRepository, ClassType, IMongoSpecification, Entity, FilterQuery, RepositoryValidationError } from "repository-generic";
+import { IsOptional, IsString, IsISO8601, IsInt, IsOptional, IsString, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from "class-transformer";
 
 
@@ -41,20 +41,27 @@ class Purchase {
     }
 }
 
-class User implements Model {
+export default class User {
     public id: string;
     @IsString()
     @IsOptional()
     public name?: string;
+    @IsISO8601()
     public createdAt: string;
-    public lastUpdateAt: string;
+    @IsISO8601()
+    public lastUpdatedAt: string;
+    @IsNumber()
     public version: number;
     @Type(() => Purchase)
     @ValidateNested({
         each: true,
     })
     public purchase: Purchase[];
+    @IsBoolean()
+    @IsOptional()
+    public isDeleted?: boolean;
 }
+
 
 
 class UserRepository extends MongoRepository<User> {
