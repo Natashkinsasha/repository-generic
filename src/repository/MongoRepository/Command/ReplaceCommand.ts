@@ -11,16 +11,24 @@ import RepositoryValidationError from "../../../error/RepositoryValidationError"
 export default class ReplaceCommand<M extends { id: string }> implements ICommand<M, M | void> {
 
 
-    constructor(private model: M, private options?: FindOneAndUpdateOption){}
+    constructor(private model: M, private options?: FindOneAndUpdateOption) {
+    }
 
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
-        if (repositoryOptions.softDelete) {
-            return this.validateReplaceModel(this.model, clazz)
-                .then(() => {
+        return Promise
+            .resolve()
+            .then(async () => {
+                if (repositoryOptions.validate) {
+                    await this.validateReplaceModel(this.model, clazz)
+                }
+                if (repositoryOptions.softDelete) {
                     return collection
                         .findOneAndUpdate(
-                            {_id: new ObjectId(this.model.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]},
+                            {
+                                _id: new ObjectId(this.model.id),
+                                $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]
+                            },
                             this.getReplaceObject(this.model, repositoryOptions),
                             {returnOriginal: false, ...this.options}
                         )
@@ -30,10 +38,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                             }
                             return MongoRepository.pipe(result.value, clazz);
                         });
-                });
-        }
-        return this.validateReplaceModel(this.model, clazz)
-            .then(() => {
+                }
                 return collection
                     .findOneAndUpdate(
                         {_id: new ObjectId(this.model.id)},
@@ -46,7 +51,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                         }
                         return MongoRepository.pipe(result.value, clazz);
                     });
-            });
+            })
     }
 
     private getReplaceObject(model: M, repositoryOptions: IRepositoryOptions) {

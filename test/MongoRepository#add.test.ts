@@ -38,14 +38,15 @@ describe('Test UserRepository#add', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 version: true,
                 createdAt: true,
-                lastUpdatedAt: true
+                lastUpdatedAt: true,
+                validate: true,
             });
         })
 

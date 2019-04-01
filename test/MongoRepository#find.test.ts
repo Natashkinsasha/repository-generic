@@ -10,7 +10,7 @@ import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
 
 
-describe('Test UserRepository#add', () => {
+describe('Test UserRepository#find', () => {
 
     const {expect} = chai;
 

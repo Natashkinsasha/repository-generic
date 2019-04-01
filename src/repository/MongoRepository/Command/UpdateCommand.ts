@@ -16,9 +16,12 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
 
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
-        if (repositoryOptions.softDelete) {
-            return this.validateUpdateModel(this.model, clazz)
-                .then(() => {
+        return Promise.resolve()
+            .then(async () => {
+                if (repositoryOptions.validate) {
+                    await this.validateUpdateModel(this.model, clazz)
+                }
+                if (repositoryOptions.softDelete) {
                     return collection
                         .findOneAndUpdate(
                             {_id: new ObjectId(this.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]},
@@ -31,10 +34,7 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
                             }
                             return MongoRepository.pipe(result.value, clazz);
                         });
-                });
-        }
-        return this.validateUpdateModel(this.model, clazz)
-            .then(() => {
+                }
                 return collection
                     .findOneAndUpdate(
                         {_id: new ObjectId(this.id)},
@@ -47,6 +47,7 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
                         }
                         return MongoRepository.pipe(result.value, clazz);
                     });
+
             });
     }
 

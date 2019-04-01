@@ -10,28 +10,37 @@ import IRepositoryOptions from "../../IRepositoryOptions";
 
 export default class AddCommand<M> implements ICommand<M, string> {
 
-    constructor(private model: CreateModel<M>, private  options?: CollectionInsertOneOptions){
+    constructor(private model: CreateModel<M>, private  options?: CollectionInsertOneOptions) {
 
     }
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<string> {
-        if (repositoryOptions.softDelete) {
-            const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions), isDeleted: false};
-            return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions), isDeleted: false}, clazz)
-                .then(()=>{
-                    return collection.insertOne(model, this.options);
-                })
-                .then((result: InsertOneWriteOpResult) => {
-                    return result.insertedId.toHexString();
-                });
-        }
-        const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions)};
-        return this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
-            .then(() => {
-                return collection.insertOne(model, this.options);
-            })
-            .then((result: InsertOneWriteOpResult) => {
-                return result.insertedId.toHexString();
+        return Promise.resolve()
+            .then(async () => {
+                if (repositoryOptions.softDelete) {
+                    const model = {
+                        ...this.model, ...this.createAdditionalProperty(repositoryOptions),
+                        isDeleted: false
+                    };
+                    if (repositoryOptions.validate) {
+                        await this.validateCreateModel({
+                            ...this.model, ...this.createAdditionalProperty(repositoryOptions),
+                            isDeleted: false
+                        }, clazz)
+                    }
+                    return collection.insertOne(model, this.options)
+                        .then((result: InsertOneWriteOpResult) => {
+                            return result.insertedId.toHexString();
+                        });
+                }
+                const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions)};
+                if (repositoryOptions.validate) {
+                    await this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
+                }
+                return collection.insertOne(model, this.options)
+                    .then((result: InsertOneWriteOpResult) => {
+                        return result.insertedId.toHexString();
+                    });
             });
     }
 
@@ -44,7 +53,7 @@ export default class AddCommand<M> implements ICommand<M, string> {
         });
     }
 
-    private createAdditionalProperty(options: IRepositoryOptions): {version?: number, createdAt?: string, lastUpdatedAt?: string, softDelete?: boolean} {
+    private createAdditionalProperty(options: IRepositoryOptions): { version?: number, createdAt?: string, lastUpdatedAt?: string, softDelete?: boolean } {
         return Object.entries(options)
             .reduce((additionalProperty, [key, value]) => {
                 if (key === "version" && value) {

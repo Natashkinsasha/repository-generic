@@ -1,14 +1,13 @@
 import {plainToClass} from 'class-transformer';
-import {validate, ValidationError} from 'class-validator';
 import {
     ClientSession,
     Collection, CollectionInsertOneOptions, CommonOptions,
-    Cursor,
     Db,
-    DeleteWriteOpResultObject,
-    FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, FindOneOptions, IndexSpecification,
-    InsertOneWriteOpResult, MongoClient,
-    ObjectId, UpdateManyOptions,
+    FindOneAndUpdateOption,
+    FindOneOptions,
+    IndexSpecification,
+    MongoClient,
+    UpdateManyOptions,
 } from 'mongodb';
 import IMongoSpecification from '../../specification/IMongoSpecification';
 import IMongoRepository, {CreateModel, Entity, UpdateModel} from "../IMongoRepository";
@@ -37,7 +36,7 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     private readonly options: IRepositoryOptions;
 
     protected constructor(private readonly db: Db, private client: MongoClient, options: Partial<IRepositoryOptions> = {}) {
-        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, ...options};
+        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, validate: false, ...options};
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {

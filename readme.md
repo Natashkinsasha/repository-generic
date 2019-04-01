@@ -1,36 +1,36 @@
-repository-generic
-================
+# repository-generic
+
+## Description
 
 Repository base class for Node.JS. Currently only supports MongoDB.
 
 ## Installation
 
 Npm
-```javascript
+```bash
 npm install repository-generic
 ```
 
 Yarn
-```javascript
+```bash
 yarn add repository-generic
 ```
 
-# Support
+## Support
 
 This library is quite fresh, and maybe has bugs. Write me an **email** to *natashkinsash@gmail.com* and I will fix the bug in a few working days.
 
-# Quick start
+
+## Overview
 
 This library can be use with JavaScript, but better use one with TypeScript.
 
+### Defining a Model
+
 ```typescript
 import "reflect-metadata"
-import { Db } from 'mongodb';
-import { RedisClient } from 'redis';
-import { MongoRepository, ClassType, IMongoSpecification, Entity, FilterQuery, RepositoryValidationError } from "repository-generic";
 import { IsOptional, IsString, IsISO8601, IsInt, IsOptional, IsString, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from "class-transformer";
-
 
 class Purchase {
     @IsISO8601()
@@ -61,12 +61,18 @@ export default class User {
     @IsOptional()
     public isDeleted?: boolean;
 }
+```
 
+### Create MongoRepository
 
+```typescript
+import { Db, MongoClient } from 'mongodb';
+import { MongoRepository, ClassType, IRepositoryOptions } from "repository-generic";
+import User from "./User"
 
 class UserRepository extends MongoRepository<User> {
-    constructor(db: Db) {
-        super(db);
+    constructor(db: Db, clinet: MongoClient, options: Partial<IRepositoryOptions>) {
+        super(db, clinet, options);
     }
 
     protected getClass(): ClassType<User> {
@@ -74,42 +80,60 @@ class UserRepository extends MongoRepository<User> {
     }
 }
 
-class NameUserSpecification implements IMongoSpecification<User>{
+```
 
-    private readonly name: string;
+### Create CacheReidsMongoRepository
 
-    constructor(name: string){
-        this.name = name;
+```typescript
+import { Db, MongoClient } from 'mongodb';
+import { RedisClient } from "redis";
+import { MongoRepository, ClassType, RedisCacheManager, CacheRedisMongoRepository, IRepositoryOptions } from "repository-generic";
+import User from "./User"
+
+class UserCacheManager extends RedisCacheManager<User> {
+    protected getClass(): ClassType<User> {
+        return User;
     }
 
-    public specified(): FilterQuery<Entity<User>> {
-        return {
-            name: this.name,
-        };
+    protected getCollectionName(): string {
+        return 'user';
     }
-
 }
 
+class UserRepository extends CacheRedisMongoRepository<User> {
+    constructor(db: Db, clinet: MongoClient, redisClient: RedisClient, options: Partial<IRepositoryOptions>) {
+        super(db, clinet, new UserCacheManager(redisClient), options);
+    }
 
-const db = await this.getDb();
+    protected getClass(): ClassType<User> {
+        return User;
+    }
+}
 
-const userRepository = new UserRepository(db);
+```
 
-const id = await userRepository.add({name: "Test", purchase:[]})
 
-userRepository.add({purchase: [new Purchase("")]})
-    .catch((err: RepositoryValidationError) => {})
+### Create UserService
 
-await userRepository.get(id);
+```typescript
 
-await userRepository.findOne(new NameUserSpecification(name));
+import User from "./User";
+import UserRepository from "./UserRepository";
 
-await userRepository.find(new NameUserSpecification(name));
+class UserService {
+    
+    constructor(private userRepository: UserRepository){}
+    
+    public create(): Promise<string>{
+        return userRepository.add({name: "Test", purchase:[]});
+    }
+    
+    public findById(): Promise<User>{
+        return userRepository.get(id);
+    }
+    
+}
+```
 
-await userRepository.update(id, { name: "Test3" });
-
-await userRepository.findAndUpdate(new NameUserSpecification(name), { name: "Test2" });
-
-await userRepository.delete(id);
 
 ```

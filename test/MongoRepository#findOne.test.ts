@@ -10,7 +10,7 @@ import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
 
 
-describe('Test UserRepository#add', () => {
+describe('Test UserRepository#findOne', () => {
 
     const {expect} = chai;
 
@@ -39,14 +39,15 @@ describe('Test UserRepository#add', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 version: true,
                 createdAt: true,
-                lastUpdatedAt: true
+                lastUpdatedAt: true,
+                validate: true,
             });
         })
 
@@ -64,6 +65,9 @@ describe('Test UserRepository#add', () => {
         it('2', (done) => {
             userRepository
                 .add({purchase: [new Purchase("")]})
+                .then(()=>{
+                    done('Should be error!!!')
+                })
                 .catch((err: Error) => {
                     expect(err.name).to.equal("RepositoryValidationError");
                     done();

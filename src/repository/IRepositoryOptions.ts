@@ -5,4 +5,5 @@ export default interface IRepositoryOptions{
     createdAt: boolean;
     lastUpdatedAt: boolean;
     softDelete: boolean;
+    validate: boolean;
 }

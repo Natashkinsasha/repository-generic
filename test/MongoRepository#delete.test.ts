@@ -9,7 +9,7 @@ import MongoDbHelper from "../src/helper/MongoDbHelper";
 import Purchase from "./user/Purchase";
 
 
-describe('Test UserRepository#add', () => {
+describe('Test UserRepository#delete', () => {
 
     const {expect} = chai;
 
