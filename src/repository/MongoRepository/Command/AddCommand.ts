@@ -60,10 +60,10 @@ export default class AddCommand<M> implements ICommand<M, string> {
                     return {...additionalProperty, version: 0};
                 }
                 if (key === "createdAt" && value) {
-                    return {...additionalProperty, createdAt: new Date().toISOString()};
+                    return {...additionalProperty, createdAt: new Date()};
                 }
                 if (key === "lastUpdatedAt" && value) {
-                    return {...additionalProperty, lastUpdatedAt: new Date().toISOString()};
+                    return {...additionalProperty, lastUpdatedAt: new Date()};
                 }
                 if (key === "softDelete" && value) {
                     return {...additionalProperty, isDeleted: false};

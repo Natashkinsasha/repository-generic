@@ -1,11 +1,13 @@
-import {IsISO8601} from "class-validator";
+import {IsDate, IsISO8601} from "class-validator";
+import {Type} from "class-transformer";
 
 
 export default class Purchase {
-    @IsISO8601()
-    public createdAt: string;
+    @IsDate()
+    @Type(() => Date)
+    public createdAt: Date;
 
-    constructor(createdAt: string) {
+    constructor(createdAt: Date) {
         this.createdAt = createdAt;
     }
 }

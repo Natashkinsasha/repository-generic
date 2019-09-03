@@ -29,14 +29,15 @@ This library can be use with JavaScript, but better use one with TypeScript.
 
 ```typescript
 import "reflect-metadata"
-import { IsOptional, IsString, IsISO8601, IsInt, IsOptional, IsString, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsDate, IsInt, IsOptional, IsString, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from "class-transformer";
 
 class Purchase {
-    @IsISO8601()
-    public createdAt: string;
+    @IsDate()
+    @Type(() => Date)
+    public createdAt: Date;
 
-    constructor(createdAt: string) {
+    constructor(createdAt: Date) {
         this.createdAt = createdAt;
     }
 }
@@ -46,10 +47,12 @@ export default class User {
     @IsString()
     @IsOptional()
     public name?: string;
-    @IsISO8601()
-    public createdAt: string;
-    @IsISO8601()
-    public lastUpdatedAt: string;
+    @IsDate()
+    @Type(() => Date)
+    public createdAt: Date;
+    @IsDate()
+    @Type(() => Date)
+    public lastUpdatedAt: Date;
     @IsNumber()
     public version: number;
     @Type(() => Purchase)

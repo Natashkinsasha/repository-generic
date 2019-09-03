@@ -14,8 +14,8 @@ import {Subtract} from "../util";
 export interface Model {
     id: string;
     version: number;
-    createdAt: string;
-    lastUpdatedAt: string;
+    createdAt: Date;
+    lastUpdatedAt: Date;
     isDeleted: boolean;
 }
 

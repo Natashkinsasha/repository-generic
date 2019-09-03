@@ -30,11 +30,8 @@ export function validateUser(user: User, expectUser?: Partial<User>): void{
     user.version && expect(user.version).to.be.a('number');
     expectUser && expectUser.version && expect(user.version).to.equal(expectUser.version);
 
-    user.createdAt && expect(user.createdAt).to.be.a('string');
-    expectUser && expectUser.createdAt && expect(user.createdAt).to.equal(expectUser.createdAt);
-
-    user.lastUpdatedAt && expect(user.lastUpdatedAt).to.be.a('string');
-    expectUser && expectUser.lastUpdatedAt && expect(user.lastUpdatedAt).to.equal(expectUser.lastUpdatedAt);
+    expect(user.createdAt).to.be.an.instanceof(Date);
+    expect(user.lastUpdatedAt).to.be.an.instanceof(Date);
 
     user.isDeleted && expect(user.isDeleted).to.be.a('boolean');
     expectUser && expectUser.isDeleted && expect(user.isDeleted).to.equal(expectUser.isDeleted);

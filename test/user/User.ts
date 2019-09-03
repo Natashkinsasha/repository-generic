@@ -1,5 +1,5 @@
 import "reflect-metadata"
-import {IsBoolean, IsInt, IsISO8601, IsNumber, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {IsBoolean, IsDate, IsInt, IsISO8601, IsNumber, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {Type} from "class-transformer";
 import {Model} from "../../src/repository/IMongoRepository";
 import Purchase from "./Purchase";
@@ -10,10 +10,12 @@ export default class User {
     @IsString()
     @IsOptional()
     public name?: string;
-    @IsISO8601()
-    public createdAt: string;
-    @IsISO8601()
-    public lastUpdatedAt: string;
+    @IsDate()
+    @Type(() => Date)
+    public createdAt: Date;
+    @IsDate()
+    @Type(() => Date)
+    public lastUpdatedAt: Date;
     @IsNumber()
     public version: number;
     @Type(() => Purchase)

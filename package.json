@@ -1,12 +1,11 @@
 {
   "name": "repository-generic",
-  "version": "0.0.25",
+  "version": "0.1.25",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "scripts": {
     "build": "rimraf build && tsc -p tsconfig.build.json",
-    "start": "cross-env NODE_ENV=localhost ts-node-dev -r tsconfig-paths/register src/index.ts",
     "test": "npm run build && cross-env NODE_ENV=test mocha test/**/*.ts"
   },
   "author": "Alex Natashkin <natashkinsasha@gmail.com>",
@@ -28,9 +27,7 @@
     "@types/redis": "^2.8.12",
     "class-transformer": "^0.2.0",
     "class-validator": "^0.9.1",
-    "cross-env": "^5.2.0",
-    "mocha": "^6.0.2",
-    "mongodb": "^3.1.13",
+    "mongodb": "^3.3.2",
     "redis": "^2.8.0"
   },
   "devDependencies": {
@@ -39,11 +36,13 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.11.3",
     "chai": "^4.2.0",
+    "cross-env": "^5.2.1",
     "faker": "^4.1.0",
+    "mocha": "^6.2.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^2.6.3",
     "ts-node": "^8.0.3",
-    "ts-node-dev": "^1.0.0-pre.32",
+    "ts-node-dev": "^1.0.0-pre.42",
     "tsconfig-paths": "^3.8.0",
     "typescript": "^3.3.3333"
   },

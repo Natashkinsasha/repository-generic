@@ -7,7 +7,6 @@ import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import Purchase from "./user/Purchase";
-import NameUserSpecification from "./user/NameUserSpecification";
 
 
 describe('Test UserRepository#get', () => {
@@ -51,7 +50,7 @@ describe('Test UserRepository#get', () => {
         })
 
         it('1', (done) => {
-            const user = createCreateUser({purchase: [new Purchase(new Date().toISOString())]});
+            const user = createCreateUser({purchase: [new Purchase(new Date())]});
             userRepository
                 .add(user)
                 .then((id: string) => {
@@ -84,7 +83,7 @@ describe('Test UserRepository#get', () => {
         })
 
         it('1', (done) => {
-            const user = createCreateUser({purchase: [new Purchase(new Date().toISOString())]});
+            const user = createCreateUser({purchase: [new Purchase(new Date())]});
             userRepository
                 .add(user)
                 .then((id: string) => {
