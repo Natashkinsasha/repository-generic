@@ -26,7 +26,7 @@ export default class AddCommand<M> implements ICommand<M, string> {
                         await this.validateCreateModel({
                             ...this.model, ...this.createAdditionalProperty(repositoryOptions),
                             isDeleted: false
-                        }, clazz)
+                        }, clazz, repositoryOptions)
                     }
                     return collection.insertOne(model, this.options)
                         .then((result: InsertOneWriteOpResult) => {
@@ -35,7 +35,7 @@ export default class AddCommand<M> implements ICommand<M, string> {
                 }
                 const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions)};
                 if (repositoryOptions.validate) {
-                    await this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz)
+                    await this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz, repositoryOptions)
                 }
                 return collection.insertOne(model, this.options)
                     .then((result: InsertOneWriteOpResult) => {
@@ -44,8 +44,8 @@ export default class AddCommand<M> implements ICommand<M, string> {
             });
     }
 
-    private validateCreateModel(model: CreateModel<M>, clazz: ClassType<M>): Promise<void> {
-        return validate(plainToClass(clazz, model)).then((errors: ReadonlyArray<ValidationError>) => {
+    private validateCreateModel(model: CreateModel<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+        return validate(plainToClass(clazz, model), repositoryOptions.validatorOptions).then((errors: ReadonlyArray<ValidationError>) => {
             if (errors.length) {
                 throw new RepositoryValidationError(errors);
             }

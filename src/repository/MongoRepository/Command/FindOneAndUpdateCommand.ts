@@ -17,7 +17,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
         return Promise.resolve()
             .then(async ()=>{
                 if (repositoryOptions.validate) {
-                    await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date().toISOString()}, clazz)
+                    await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date().toISOString()}, clazz, repositoryOptions)
                 }
                 const query = this.specification && this.specification.specified() || {};
                 if (repositoryOptions.softDelete) {
@@ -35,7 +35,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                             if (!result.value) {
                                 return;
                             }
-                            return MongoRepository.pipe(result.value, clazz);
+                            return MongoRepository.pipe(result.value, clazz, repositoryOptions);
                         });
                 }
                 return collection
@@ -51,13 +51,13 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                         if (!result.value) {
                             return;
                         }
-                        return MongoRepository.pipe(result.value, clazz);
+                        return MongoRepository.pipe(result.value, clazz, repositoryOptions);
                     });
             });
     }
 
-    private validateUpdateModel(model: UpdateModel<M>, clazz: ClassType<M>): Promise<void> {
-        return validate(plainToClass(clazz, model), {skipMissingProperties: true}).then(
+    private validateUpdateModel(model: UpdateModel<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+        return validate(plainToClass(clazz, model), {...repositoryOptions.validatorOptions, skipMissingProperties: true}).then(
             (errors: ReadonlyArray<ValidationError>) => {
                 if (errors.length) {
                     throw new RepositoryValidationError(errors);

@@ -32,7 +32,7 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
                             if (!result.value) {
                                 return;
                             }
-                            return MongoRepository.pipe(result.value, clazz);
+                            return MongoRepository.pipe(result.value, clazz, repositoryOptions);
                         });
                 }
                 return collection
@@ -45,7 +45,7 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
                         if (!result.value) {
                             return;
                         }
-                        return MongoRepository.pipe(result.value, clazz);
+                        return MongoRepository.pipe(result.value, clazz, repositoryOptions);
                     });
 
             });

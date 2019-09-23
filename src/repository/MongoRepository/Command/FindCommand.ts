@@ -19,7 +19,7 @@ export default class FindCommand<M> implements ICommand<M, ReadonlyArray<M>> {
         return this.buildLimit(this.buildSkip(this.buildSort(this.buildFind(repositoryOptions, collection, this.specification, this.options), this.sort), this.skip), this.limit)
             .toArray()
             .then((array: ReadonlyArray<Entity<M>>) => {
-                return array.map((entity: Entity<M>) => MongoRepository.pipe(entity, clazz));
+                return array.map((entity: Entity<M>) => MongoRepository.pipe(entity, clazz, repositoryOptions));
             });
     }
 

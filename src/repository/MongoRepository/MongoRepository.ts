@@ -1,4 +1,4 @@
-import {plainToClass} from 'class-transformer';
+import {ClassTransformOptions, plainToClass} from 'class-transformer';
 import {
     ClientSession,
     Collection, CollectionInsertOneOptions, CommonOptions,
@@ -36,7 +36,7 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     private readonly options: IRepositoryOptions;
 
     protected constructor(private readonly db: Db, private client: MongoClient, options: Partial<IRepositoryOptions> = {}) {
-        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, validate: false, ...options};
+        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, validate: false, classTransformOptions: {}, validatorOptions: {}, ...options};
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {
@@ -47,8 +47,6 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         return new CreateIndexCommand(indexSpecs).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-
-
     public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<string> {
         return new AddCommand<M>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
@@ -57,13 +55,9 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         return new GetCommand<M>(id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-
-
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
         return new ReplaceCommand(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
-
-
 
     public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
         return new UpdateCommand(id, model, options).execute(this.getCollection(), this.getClass(), this.options);
@@ -113,13 +107,13 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         return this.db.collection(this.getCollectionName());
     };
 
-    public static pipe<M>(entity: Entity<M>, clazz: ClassType<M>): M {
+    public static pipe<M>(entity: Entity<M>, clazz: ClassType<M>, options: IRepositoryOptions): M {
         if (!entity._id) {
             throw new Error('Haven`t _id in object');
         }
         const {_id, ...object} = entity;
         const id = _id.toHexString();
-        return plainToClass(clazz, {id, ...object});
+        return plainToClass(clazz, {id, ...object}, options.classTransformOptions);
     }
 
 }

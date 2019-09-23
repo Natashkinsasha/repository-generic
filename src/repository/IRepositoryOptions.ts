@@ -1,3 +1,5 @@
+import {ClassTransformOptions} from "class-transformer";
+import {ValidatorOptions} from "class-validator";
 
 
 export default interface IRepositoryOptions{
@@ -6,4 +8,6 @@ export default interface IRepositoryOptions{
     lastUpdatedAt: boolean;
     softDelete: boolean;
     validate: boolean;
+    classTransformOptions: ClassTransformOptions;
+    validatorOptions: ValidatorOptions;
 }

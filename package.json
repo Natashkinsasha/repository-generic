@@ -1,6 +1,6 @@
 {
   "name": "repository-generic",
-  "version": "0.1.25",
+  "version": "0.2.1",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -25,8 +25,8 @@
   "dependencies": {
     "@types/mongodb": "^3.1.22",
     "@types/redis": "^2.8.12",
-    "class-transformer": "^0.2.0",
-    "class-validator": "^0.9.1",
+    "class-transformer": "^0.2.3",
+    "class-validator": "^0.10.0",
     "mongodb": "^3.3.2",
     "redis": "^2.8.0"
   },

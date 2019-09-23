@@ -19,7 +19,7 @@ export default class FindOneCommand<M> implements ICommand<M, M | void> {
                 .findOne({...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]}, this.options)
                 .then((e: M & { _id: ObjectId } | null) => {
                     if (e) {
-                        return MongoRepository.pipe(e, clazz);
+                        return MongoRepository.pipe(e, clazz, repositoryOptions);
                     }
                     return;
                 });
@@ -28,7 +28,7 @@ export default class FindOneCommand<M> implements ICommand<M, M | void> {
             .findOne(query, this.options)
             .then((e: M & { _id: ObjectId } | null) => {
                 if (e) {
-                    return MongoRepository.pipe(e, clazz);
+                    return MongoRepository.pipe(e, clazz, repositoryOptions);
                 }
                 return;
             });

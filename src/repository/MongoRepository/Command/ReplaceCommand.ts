@@ -20,7 +20,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
             .resolve()
             .then(async () => {
                 if (repositoryOptions.validate) {
-                    await this.validateReplaceModel(this.model, clazz)
+                    await this.validateReplaceModel(this.model, clazz, repositoryOptions)
                 }
                 if (repositoryOptions.softDelete) {
                     return collection
@@ -36,7 +36,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                             if (!result.value) {
                                 return;
                             }
-                            return MongoRepository.pipe(result.value, clazz);
+                            return MongoRepository.pipe(result.value, clazz, repositoryOptions);
                         });
                 }
                 return collection
@@ -49,7 +49,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                         if (!result.value) {
                             return;
                         }
-                        return MongoRepository.pipe(result.value, clazz);
+                        return MongoRepository.pipe(result.value, clazz, repositoryOptions);
                     });
             })
     }
@@ -78,8 +78,8 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
         };
     }
 
-    private validateReplaceModel(model: M, clazz: ClassType<M>): Promise<void> {
-        return validate(plainToClass(clazz, model)).then((errors: ReadonlyArray<ValidationError>) => {
+    private validateReplaceModel(model: M, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+        return validate(plainToClass(clazz, model), repositoryOptions.validatorOptions).then((errors: ReadonlyArray<ValidationError>) => {
             if (errors.length) {
                 throw new RepositoryValidationError(errors);
             }
