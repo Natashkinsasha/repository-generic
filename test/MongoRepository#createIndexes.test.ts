@@ -1,17 +1,15 @@
+import * as chai from "chai";
 import * as mongodb from "mongodb";
 import * as redis from "redis";
-import * as chai from "chai";
-import * as chaiAsPromised from 'chai-as-promised';
+import MongoDbHelper from "../src/helper/MongoDbHelper";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser} from "./util";
-import MongoDbHelper from "../src/helper/MongoDbHelper";
-import RepositoryValidationError from "../src/error/RepositoryValidationError";
+import User from "./user/User";
 
 
-describe('Test UserRepository#add', () => {
+describe('Test UserRepository#clean', () => {
 
     const {expect} = chai;
-    chai.use(chaiAsPromised);
 
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
@@ -37,7 +35,6 @@ describe('Test UserRepository#add', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-
     describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
 
         let userRepository: UserRepository;
@@ -48,51 +45,21 @@ describe('Test UserRepository#add', () => {
                 lastUpdatedAt: true,
                 validateAdd: true,
             });
-        })
+        });
 
         it('1', (done) => {
-            const user = createCreateUser({});
             userRepository
-                .add(user)
-                .then((id: string) => {
-                    expect(id).to.be.a('string');
+                .createIndexes([{
+                    key: {
+                        name: 1
+                    }
+                }])
+                .then(() => {
                     done();
                 })
                 .catch(done);
         });
 
-        it('2', () => {
-            const user: any = {};
-            return expect(userRepository.add(user)).to.be.rejectedWith(RepositoryValidationError);
-        });
-
-    });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
-            });
-        })
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    expect(id).to.be.a('string');
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
+    })
 
 });

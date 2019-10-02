@@ -39,45 +39,6 @@ describe('Test UserRepository#findOne', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                validate: true,
-            });
-        })
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    expect(id).to.be.a('string');
-                    done();
-                })
-                .catch(done);
-        });
-
-        it.skip('2', (done) => {
-            userRepository
-                .add({purchase: [new Purchase(new Date())]})
-                .then(()=>{
-                    done('Should be error!!!')
-                })
-                .catch((err: Error) => {
-                    expect(err.name).to.equal("RepositoryValidationError");
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
-
     describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
 
         let userRepository: UserRepository;
@@ -88,7 +49,7 @@ describe('Test UserRepository#findOne', () => {
                 lastUpdatedAt: true,
                 softDelete: true,
             });
-        })
+        });
 
         it('1', (done) => {
             const name = faker.name.findName();
@@ -120,7 +81,50 @@ describe('Test UserRepository#findOne', () => {
                 })
                 .catch(done);
         });
+    });
 
+
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+
+        let userRepository: UserRepository;
+        before(() => {
+            userRepository = new UserRepository(db, mongoClient, redisClient, {
+                version: true,
+                createdAt: true,
+                lastUpdatedAt: true,
+            });
+        });
+
+        it('1', (done) => {
+            const name = faker.name.findName();
+            const user = createCreateUser({name});
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository.findOne(new NameUserSpecification(name));
+                })
+                .then((newUser: User) => {
+                    validateUser(newUser, {...user, version: 0, isDeleted: false});
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            const name = faker.name.findName();
+            const user = createCreateUser({name});
+            userRepository
+                .add(user)
+                .then(async (id: string) => {
+                    await userRepository.delete(id);
+                    return userRepository.findOne(new NameUserSpecification(name));
+                })
+                .then((newUser: User | void) => {
+                    expect(newUser).to.be.a('undefined');
+                    done();
+                })
+                .catch(done);
+        });
     });
 
 });

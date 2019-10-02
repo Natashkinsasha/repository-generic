@@ -58,12 +58,12 @@ describe('Test UserRepository#transaction', () => {
                 .then((id: string) => {
                     return userRepository
                         .transaction(async (session) => {
-                            await userRepository.update(id, {name: newName}, {session})
+                            await userRepository.update(id, {name: newName}, {session});
                             return userRepository.get(id, {session});
                         });
                 })
                 .then((newUser: User) => {
-                    expect(newUser).to.be.a('object')
+                    expect(newUser).to.be.a('object');
                     newUser && validateUser(newUser, {...user, name: newName, version: 1});
                     done();
                 })

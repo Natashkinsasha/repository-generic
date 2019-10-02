@@ -16,8 +16,8 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
         return Promise.resolve()
             .then(async ()=>{
-                if (repositoryOptions.validate) {
-                    await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date().toISOString()}, clazz, repositoryOptions)
+                if (repositoryOptions.validateUpdate) {
+                    await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date()}, clazz, repositoryOptions)
                 }
                 const query = this.specification && this.specification.specified() || {};
                 if (repositoryOptions.softDelete) {
@@ -26,7 +26,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                         .findOneAndUpdate(
                             {...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]},
                             {
-                                $set: {...this.model, lastUpdatedAt: new Date().toISOString()},
+                                $set: {...this.model, lastUpdatedAt: new Date()},
                                 $inc: {version: 1},
                             },
                             {returnOriginal: false, ...this.options}
@@ -42,7 +42,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                     .findOneAndUpdate(
                         query,
                         {
-                            $set: {...this.model, lastUpdatedAt: new Date().toISOString()},
+                            $set: {...this.model, lastUpdatedAt: new Date()},
                             $inc: {version: 1},
                         },
                         {returnOriginal: false, ...this.options}

@@ -48,7 +48,7 @@ describe('Test UserRepository#update', () => {
                 createdAt: true,
                 lastUpdatedAt: true
             });
-        })
+        });
 
         it('1', (done) => {
             const user = createCreateUser({});
@@ -68,7 +68,7 @@ describe('Test UserRepository#update', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true, validateUpdate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
@@ -77,8 +77,9 @@ describe('Test UserRepository#update', () => {
                 createdAt: true,
                 lastUpdatedAt: true,
                 softDelete: true,
+                validateUpdate: true,
             });
-        })
+        });
 
         it('1', (done) => {
             const user = createCreateUser({});

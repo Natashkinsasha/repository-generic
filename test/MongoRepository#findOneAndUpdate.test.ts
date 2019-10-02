@@ -1,16 +1,15 @@
+import * as chai from "chai";
 import * as mongodb from "mongodb";
 import * as redis from "redis";
-import * as chai from "chai";
+import MongoDbHelper from "../src/helper/MongoDbHelper";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
-import * as faker from "faker";
-import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
+import * as faker from "faker";
 
 
-describe('Test UserRepository#replace', () => {
+describe('Test UserRepository#clean', () => {
 
     const {expect} = chai;
 
@@ -38,8 +37,7 @@ describe('Test UserRepository#replace', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateReplace: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateUpdate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
@@ -47,7 +45,7 @@ describe('Test UserRepository#replace', () => {
                 version: true,
                 createdAt: true,
                 lastUpdatedAt: true,
-                validateReplace: true,
+                validateUpdate: true,
             });
         });
 
@@ -56,13 +54,10 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
+                .then(() => {
+                    return userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName});
                 })
-                .then((user: User) => {
-                    return userRepository.replace({...user, name: newName});
-                })
-                .then((newUser: User) => {
+                .then((newUser: User)=>{
                     validateUser(newUser, {...user, name: newName, version: 1});
                     done();
                 })
@@ -71,34 +66,44 @@ describe('Test UserRepository#replace', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateUpdate: true, softDelete: true}', () => {
+
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 version: true,
                 createdAt: true,
                 lastUpdatedAt: true,
+                validateUpdate: true,
                 softDelete: true,
             });
         });
+
         it('1', (done) => {
             const user = createCreateUser({});
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
+                .then(() => {
+                    return userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName});
                 })
-                .then(async (user: User) => {
-                    await userRepository.delete(user.id);
-                    return userRepository.replace({...user, name: newName});
+                .then((newUser: User)=>{
+                    validateUser(newUser, {...user, name: newName, version: 1});
+                    done();
                 })
-                .then((newUser: User) => {
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            const user = createCreateUser({});
+            const newName = faker.name.findName();
+            userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName})
+                .then((newUser?: User)=>{
                     expect(newUser).to.be.a('undefined');
                     done();
                 })
                 .catch(done);
         });
-    });
+    })
 
 });

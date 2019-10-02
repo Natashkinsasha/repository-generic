@@ -19,7 +19,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
         return Promise
             .resolve()
             .then(async () => {
-                if (repositoryOptions.validate) {
+                if (repositoryOptions.validateReplace) {
                     await this.validateReplaceModel(this.model, clazz, repositoryOptions)
                 }
                 if (repositoryOptions.softDelete) {
@@ -61,7 +61,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                 ...uModel, ...Object.entries(repositoryOptions)
                     .reduce((additionalProperty, [key, value]) => {
                         if (key === "lastUpdatedAt" && value) {
-                            return {...additionalProperty, lastUpdatedAt: new Date().toISOString()};
+                            return {...additionalProperty, lastUpdatedAt: new Date()};
                         }
                         return additionalProperty;
                     }, {})

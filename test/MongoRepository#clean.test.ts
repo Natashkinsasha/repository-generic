@@ -1,16 +1,13 @@
+import * as chai from "chai";
 import * as mongodb from "mongodb";
 import * as redis from "redis";
-import * as chai from "chai";
-import UserRepository from "./user/UserRepository";
-import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
-import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
-import NameUserSpecification from "./user/NameUserSpecification";
+import UserRepository from "./user/UserRepository";
+import {createCreateUser} from "./util";
+import User from "./user/User";
 
 
-describe('Test UserRepository#replace', () => {
+describe('Test UserRepository#clean', () => {
 
     const {expect} = chai;
 
@@ -38,8 +35,7 @@ describe('Test UserRepository#replace', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateReplace: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
@@ -47,54 +43,73 @@ describe('Test UserRepository#replace', () => {
                 version: true,
                 createdAt: true,
                 lastUpdatedAt: true,
-                validateReplace: true,
+                validateAdd: true,
             });
         });
 
         it('1', (done) => {
             const user = createCreateUser({});
-            const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
+                .then(() => {
+                    return userRepository.clean();
                 })
-                .then((user: User) => {
-                    return userRepository.replace({...user, name: newName});
+                .then((count: number)=>{
+                    expect(count).to.equal(1);
+                    return userRepository.find();
                 })
-                .then((newUser: User) => {
-                    validateUser(newUser, {...user, name: newName, version: 1});
+                .then((users: Array<User>)=>{
+                    expect(users).to.have.length(0);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            userRepository.clean()
+                .then((count: number)=>{
+                    expect(count).to.equal(0);
                     done();
                 })
                 .catch(done);
         });
     });
 
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true, softDelete: true}', () => {
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 version: true,
                 createdAt: true,
                 lastUpdatedAt: true,
+                validateAdd: true,
                 softDelete: true,
             });
         });
+
         it('1', (done) => {
             const user = createCreateUser({});
-            const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
+                .then(() => {
+                    return userRepository.clean();
                 })
-                .then(async (user: User) => {
-                    await userRepository.delete(user.id);
-                    return userRepository.replace({...user, name: newName});
+                .then((count: number)=>{
+                    expect(count).to.equal(1);
+                    return userRepository.find();
                 })
-                .then((newUser: User) => {
-                    expect(newUser).to.be.a('undefined');
+                .then((users: Array<User>)=>{
+                    expect(users).to.have.length(0);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            userRepository.clean()
+                .then((count: number)=>{
+                    expect(count).to.equal(0);
                     done();
                 })
                 .catch(done);

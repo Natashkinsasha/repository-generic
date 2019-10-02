@@ -22,7 +22,7 @@ export default class AddCommand<M> implements ICommand<M, string> {
                         ...this.model, ...this.createAdditionalProperty(repositoryOptions),
                         isDeleted: false
                     };
-                    if (repositoryOptions.validate) {
+                    if (repositoryOptions.validateAdd) {
                         await this.validateCreateModel({
                             ...this.model, ...this.createAdditionalProperty(repositoryOptions),
                             isDeleted: false
@@ -34,8 +34,8 @@ export default class AddCommand<M> implements ICommand<M, string> {
                         });
                 }
                 const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions)};
-                if (repositoryOptions.validate) {
-                    await this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz, repositoryOptions)
+                if (repositoryOptions.validateAdd) {
+                    await this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz, repositoryOptions);
                 }
                 return collection.insertOne(model, this.options)
                     .then((result: InsertOneWriteOpResult) => {

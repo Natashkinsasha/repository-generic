@@ -18,7 +18,7 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
         return Promise.resolve()
             .then(async () => {
-                if (repositoryOptions.validate) {
+                if (repositoryOptions.validateUpdate) {
                     await this.validateUpdateModel(this.model, clazz)
                 }
                 if (repositoryOptions.softDelete) {
@@ -69,7 +69,7 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
                 ...uModel, ...Object.entries(repositoryOptions)
                     .reduce((additionalProperty, [key, value]) => {
                         if (key === "lastUpdatedAt" && value) {
-                            return {...additionalProperty, lastUpdatedAt: new Date().toISOString()};
+                            return {...additionalProperty, lastUpdatedAt: new Date()};
                         }
                         return additionalProperty;
                     }, {})

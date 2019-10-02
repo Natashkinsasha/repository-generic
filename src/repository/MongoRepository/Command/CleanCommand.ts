@@ -22,7 +22,7 @@ export default class CleanCommand<M> implements ICommand<M, number> {
                     this.options,
                 )
                 .then((resultObject: UpdateWriteOpResult) => {
-                    return resultObject.result.n || 0;
+                    return resultObject.result.n;
                 });
         }
         return collection

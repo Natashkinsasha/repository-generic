@@ -46,7 +46,7 @@ describe('Test UserRepository#findAndUpdate', () => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 version: true,
                 createdAt: true,
-                lastUpdatedAt: true
+                lastUpdatedAt: true,
             });
         })
 
@@ -66,8 +66,7 @@ describe('Test UserRepository#findAndUpdate', () => {
 
     });
 
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true, validateUpdate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
@@ -76,8 +75,9 @@ describe('Test UserRepository#findAndUpdate', () => {
                 createdAt: true,
                 lastUpdatedAt: true,
                 softDelete: true,
+                validateUpdate: true,
             });
-        })
+        });
 
         it('1', (done) => {
             const name = faker.name.findName();

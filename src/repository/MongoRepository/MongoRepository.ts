@@ -1,4 +1,4 @@
-import {ClassTransformOptions, plainToClass} from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 import {
     ClientSession,
     Collection, CollectionInsertOneOptions, CommonOptions,
@@ -36,7 +36,7 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     private readonly options: IRepositoryOptions;
 
     protected constructor(private readonly db: Db, private client: MongoClient, options: Partial<IRepositoryOptions> = {}) {
-        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, validate: false, classTransformOptions: {}, validatorOptions: {}, ...options};
+        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, validateAdd: false, validateGet: false, validateReplace: false, validateUpdate: false, classTransformOptions: {}, validatorOptions: {}, ...options};
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {

@@ -7,7 +7,10 @@ export default interface IRepositoryOptions{
     createdAt: boolean;
     lastUpdatedAt: boolean;
     softDelete: boolean;
-    validate: boolean;
+    validateAdd: boolean;
+    validateUpdate: boolean;
+    validateReplace: boolean;
+    validateGet: boolean;
     classTransformOptions: ClassTransformOptions;
     validatorOptions: ValidatorOptions;
 }

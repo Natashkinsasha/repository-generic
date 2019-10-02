@@ -6,7 +6,6 @@ import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
 
 

@@ -8,8 +8,7 @@ import Purchase from "./Purchase";
 export default class User {
     public id: string;
     @IsString()
-    @IsOptional()
-    public name?: string;
+    public name: string;
     @IsDate()
     @Type(() => Date)
     public createdAt: Date;
