@@ -1,16 +1,19 @@
 import * as mongodb from "mongodb";
 import * as redis from "redis";
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import Purchase from "./user/Purchase";
+import NameUserSpecification from "./user/NameUserSpecification";
+import RepositoryValidationError from "../src/error/RepositoryValidationError";
 
 
 describe('Test UserRepository#get', () => {
-
+    chai.use(chaiAsPromised);
     const {expect} = chai;
 
     let db: mongodb.Db;
@@ -70,7 +73,7 @@ describe('Test UserRepository#get', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
+    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true, validateGet: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
@@ -79,8 +82,9 @@ describe('Test UserRepository#get', () => {
                 createdAt: true,
                 lastUpdatedAt: true,
                 softDelete: true,
+                validateGet: true,
             });
-        })
+        });
 
         it('1', (done) => {
             const user = createCreateUser({purchase: [new Purchase(new Date())]});
@@ -111,6 +115,19 @@ describe('Test UserRepository#get', () => {
                 })
                 .then((newUser: User | void) => {
                     expect(newUser).to.be.a('undefined');
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('3', (done) => {
+            const user: any = {};
+            userRepository
+                .add(user)
+                .then(async (id: string) => {
+                    return expect(userRepository.get(id)).to.be.rejectedWith(RepositoryValidationError);
+                })
+                .then(() => {
                     done();
                 })
                 .catch(done);

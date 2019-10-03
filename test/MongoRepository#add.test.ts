@@ -48,7 +48,7 @@ describe('Test UserRepository#add', () => {
                 lastUpdatedAt: true,
                 validateAdd: true,
             });
-        })
+        });
 
         it('1', (done) => {
             const user = createCreateUser({});

@@ -45,12 +45,16 @@ export default class AddCommand<M> implements ICommand<M, string> {
     }
 
     private validateCreateModel(model: CreateModel<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
-        return validate(plainToClass(clazz, model), repositoryOptions.validatorOptions).then((errors: ReadonlyArray<ValidationError>) => {
-            if (errors.length) {
-                throw new RepositoryValidationError(errors);
-            }
-            return;
-        });
+        return validate(plainToClass(clazz, model), repositoryOptions.validatorOptions)
+            .then((errors: ReadonlyArray<ValidationError>) => {
+                return errors.filter((error: ValidationError) => (error.property !== 'id'));
+            })
+            .then((errors: ReadonlyArray<ValidationError>) => {
+                if (errors.length) {
+                    throw new RepositoryValidationError(errors);
+                }
+                return;
+            });
     }
 
     private createAdditionalProperty(options: IRepositoryOptions): { version?: number, createdAt?: string, lastUpdatedAt?: string, softDelete?: boolean } {

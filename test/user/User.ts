@@ -6,6 +6,7 @@ import Purchase from "./Purchase";
 
 
 export default class User {
+    @IsString()
     public id: string;
     @IsString()
     public name: string;
