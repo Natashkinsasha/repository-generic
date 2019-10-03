@@ -40,12 +40,13 @@ describe('Test UserRepository#find', () => {
 
     describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
 
-        let userRepository;
+        let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 version: true,
                 createdAt: true,
-                lastUpdatedAt: true
+                lastUpdatedAt: true,
+                validateGet: true,
             });
         })
 
@@ -90,6 +91,26 @@ describe('Test UserRepository#find', () => {
                 .catch(done);
         });
 
+        it('3', (done) => {
+            const name = faker.name.findName();
+            Promise
+                .all([
+                    userRepository.add(createCreateUser({name})),
+                    userRepository.add(createCreateUser({name})),
+                    userRepository.add(createCreateUser({})),
+                ])
+                .then(() => {
+                    const sort = new Map<string, number>().set(name, 1);
+                    return userRepository.find(new NameUserSpecification(name), 1, 1, sort);
+                })
+                .then((users: User[]) => {
+                    expect(users).to.have.lengthOf(1);
+                    validateUser(users[0], {name});
+                    done();
+                })
+                .catch(done);
+        });
+
     });
 
 
@@ -102,8 +123,9 @@ describe('Test UserRepository#find', () => {
                 createdAt: true,
                 lastUpdatedAt: true,
                 softDelete: true,
+                validateGet: true,
             });
-        })
+        });
 
         it('1', (done) => {
             Promise

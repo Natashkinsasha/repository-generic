@@ -12,23 +12,20 @@ export default class FindOneCommand<M> implements ICommand<M, M | void> {
     }
 
     public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
-        const query = this.specification && this.specification.specified() || {};
-        if (repositoryOptions.softDelete) {
-            const or = query['$or'] || [];
-            return collection
-                .findOne({...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]}, this.options)
-                .then((e: M & { _id: ObjectId } | null) => {
-                    if (e) {
-                        return MongoRepository.pipe(e, clazz, repositoryOptions);
-                    }
-                    return;
-                });
-        }
-        return collection
-            .findOne(query, this.options)
-            .then((e: M & { _id: ObjectId } | null) => {
+        return Promise.resolve()
+            .then(()=>{
+                const query = this.specification && this.specification.specified();
+                if (repositoryOptions.softDelete) {
+                    const or = query['$or'] || [];
+                    return collection
+                        .findOne({...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]}, this.options)
+                }
+                return collection
+                    .findOne(query, this.options)
+            })
+            .then(async (e: M & { _id: ObjectId } | null) => {
                 if (e) {
-                    return MongoRepository.pipe(e, clazz, repositoryOptions);
+                    return await MongoRepository.pipe(e, clazz, repositoryOptions);
                 }
                 return;
             });

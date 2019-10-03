@@ -49,7 +49,7 @@ export default abstract class RedisCacheManager<T extends { id: string }> implem
     }
 
     public deleteAll(): Promise<void> {
-        const key = `${this.getCollectionName()}:*`
+        const key = `${this.getCollectionName()}:*`;
         return new Promise((resolve, reject) => {
             return this.redisClient.keys(key, (err: Error | null, keys: string[]) => {
                 if (err) {

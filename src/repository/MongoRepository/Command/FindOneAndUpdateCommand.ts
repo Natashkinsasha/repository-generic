@@ -30,13 +30,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                                 $inc: {version: 1},
                             },
                             {returnOriginal: false, ...this.options}
-                        )
-                        .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                            if (!result.value) {
-                                return;
-                            }
-                            return MongoRepository.pipe(result.value, clazz, repositoryOptions);
-                        });
+                        );
                 }
                 return collection
                     .findOneAndUpdate(
@@ -46,13 +40,13 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                             $inc: {version: 1},
                         },
                         {returnOriginal: false, ...this.options}
-                    )
-                    .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                        if (!result.value) {
-                            return;
-                        }
-                        return MongoRepository.pipe(result.value, clazz, repositoryOptions);
-                    });
+                    );
+            })
+            .then(async (result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                if (!result.value) {
+                    return;
+                }
+                return await MongoRepository.pipe(result.value, clazz, repositoryOptions);
             });
     }
 

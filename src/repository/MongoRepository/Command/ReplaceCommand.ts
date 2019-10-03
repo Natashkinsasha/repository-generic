@@ -32,26 +32,20 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                             this.getReplaceObject(this.model, repositoryOptions),
                             {returnOriginal: false, ...this.options}
                         )
-                        .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                            if (!result.value) {
-                                return;
-                            }
-                            return MongoRepository.pipe(result.value, clazz, repositoryOptions);
-                        });
                 }
                 return collection
                     .findOneAndUpdate(
                         {_id: new ObjectId(this.model.id)},
                         this.getReplaceObject(this.model, repositoryOptions),
                         {returnOriginal: false, ...this.options}
-                    )
-                    .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                        if (!result.value) {
-                            return;
-                        }
-                        return MongoRepository.pipe(result.value, clazz, repositoryOptions);
-                    });
+                    );
             })
+            .then(async (result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                if (!result.value) {
+                    return;
+                }
+                return await MongoRepository.pipe(result.value, clazz, repositoryOptions);
+            });
     }
 
     private getReplaceObject(model: M, repositoryOptions: IRepositoryOptions) {

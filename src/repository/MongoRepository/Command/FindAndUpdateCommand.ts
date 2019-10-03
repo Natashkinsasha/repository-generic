@@ -16,7 +16,7 @@ export default class FindAndUpdateCommand<M>implements ICommand<M, void>{
     }
 
     public async execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
-        const query = this.specification && this.specification.specified() || {};
+        const query = this.specification && this.specification.specified();
         if (repositoryOptions.validateUpdate) {
             await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date()}, clazz, repositoryOptions)
         }

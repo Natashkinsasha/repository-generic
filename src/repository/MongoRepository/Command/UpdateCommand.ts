@@ -27,27 +27,21 @@ export default class UpdateCommand<M> implements ICommand<M, M | void> {
                             {_id: new ObjectId(this.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]},
                             this.getUpdateObject(this.model, repositoryOptions),
                             {returnOriginal: false, ...this.options}
-                        )
-                        .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                            if (!result.value) {
-                                return;
-                            }
-                            return MongoRepository.pipe(result.value, clazz, repositoryOptions);
-                        });
+                        );
                 }
                 return collection
                     .findOneAndUpdate(
                         {_id: new ObjectId(this.id)},
                         this.getUpdateObject(this.model, repositoryOptions),
                         {returnOriginal: false, ...this.options}
-                    )
-                    .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                        if (!result.value) {
-                            return;
-                        }
-                        return MongoRepository.pipe(result.value, clazz, repositoryOptions);
-                    });
+                    );
 
+            })
+            .then(async (result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+                if (!result.value) {
+                    return;
+                }
+                return await MongoRepository.pipe(result.value, clazz, repositoryOptions);
             });
     }
 

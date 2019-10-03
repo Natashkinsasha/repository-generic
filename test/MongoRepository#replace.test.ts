@@ -1,17 +1,18 @@
 import * as mongodb from "mongodb";
 import * as redis from "redis";
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
-import NameUserSpecification from "./user/NameUserSpecification";
+import {MongoError} from "mongodb";
+import RepositoryValidationError from "../src/error/RepositoryValidationError";
 
 
 describe('Test UserRepository#replace', () => {
-
+    chai.use(chaiAsPromised);
     const {expect} = chai;
 
     let db: mongodb.Db;
@@ -64,6 +65,42 @@ describe('Test UserRepository#replace', () => {
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, name: newName, version: 1});
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            const user = createCreateUser({});
+            const newName: any = 1;
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository.get(id);
+                })
+                .then((user: User) => {
+                    return expect(userRepository.replace({...user, name: newName})).to.be.rejectedWith(RepositoryValidationError);
+                })
+                .then(() => {
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('3', (done) => {
+            const user = createCreateUser({});
+            const newName = faker.name.findName();
+            userRepository
+                .add(user)
+                .then((id: string) => {
+                    return userRepository.get(id);
+                })
+                .then(async (user: User) => {
+                    await userRepository.delete(user.id);
+                    return userRepository.replace({...user, name: newName});
+                })
+                .then((newUser: User) => {
+                    expect(newUser).to.be.a('undefined');
                     done();
                 })
                 .catch(done);

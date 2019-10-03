@@ -1,17 +1,19 @@
 import * as mongodb from "mongodb";
 import * as redis from "redis";
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
-import {createCreateUser, validateUser} from "./util";
+import {createCreateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
+import {MongoError} from "mongodb";
+import RepositoryValidationError from "../src/error/RepositoryValidationError";
 
 
 describe('Test UserRepository#findAndUpdate', () => {
-
+    chai.use(chaiAsPromised);
     const {expect} = chai;
 
     let db: mongodb.Db;
@@ -90,6 +92,21 @@ describe('Test UserRepository#findAndUpdate', () => {
                 })
                 .then((user: User | void) => {
                     expect(user).to.be.a('undefined');
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('2', (done) => {
+            const name = faker.name.findName();
+            const user = createCreateUser({name});
+            userRepository
+                .add(user)
+                .then(async () => {
+                    const newUser: any = {name: 1};
+                    return expect(userRepository.findAndUpdate(new NameUserSpecification(name), newUser)).to.be.rejectedWith(RepositoryValidationError);
+                })
+                .then(() => {
                     done();
                 })
                 .catch(done);

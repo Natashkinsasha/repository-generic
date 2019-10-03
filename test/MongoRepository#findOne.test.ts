@@ -48,6 +48,7 @@ describe('Test UserRepository#findOne', () => {
                 createdAt: true,
                 lastUpdatedAt: true,
                 softDelete: true,
+                validateGet: true,
             });
         });
 
@@ -92,6 +93,7 @@ describe('Test UserRepository#findOne', () => {
                 version: true,
                 createdAt: true,
                 lastUpdatedAt: true,
+                validateGet: true,
             });
         });
 

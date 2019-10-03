@@ -24,6 +24,8 @@ import FindAndUpdateCommand from "./Command/FindAndUpdateCommand";
 import CleanCommand from "./Command/CleanCommand";
 import TransactionCommand from "./Command/TransactionCommand";
 import CreateIndexCommand from "./Command/CreateIndexCommand";
+import {validate, ValidationError} from "class-validator";
+import RepositoryValidationError from "../../error/RepositoryValidationError";
 
 
 export declare interface ClassType<T> {
@@ -36,7 +38,18 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     private readonly options: IRepositoryOptions;
 
     protected constructor(private readonly db: Db, private client: MongoClient, options: Partial<IRepositoryOptions> = {}) {
-        this.options = {version: false, createdAt: false, lastUpdatedAt: false, softDelete: false, validateAdd: false, validateGet: false, validateReplace: false, validateUpdate: false, classTransformOptions: {}, validatorOptions: {}, ...options};
+        this.options = {
+            version: false,
+            createdAt: false,
+            lastUpdatedAt: false,
+            softDelete: false,
+            validateAdd: false,
+            validateGet: false,
+            validateReplace: false,
+            validateUpdate: false,
+            classTransformOptions: {},
+            validatorOptions: {}, ...options
+        };
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {
@@ -107,13 +120,23 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         return this.db.collection(this.getCollectionName());
     };
 
-    public static pipe<M>(entity: Entity<M>, clazz: ClassType<M>, options: IRepositoryOptions): M {
+    public static async pipe<M>(entity: Entity<M>, clazz: ClassType<M>, options: IRepositoryOptions): Promise<M> {
         if (!entity._id) {
             throw new Error('Haven`t _id in object');
         }
         const {_id, ...object} = entity;
         const id = _id.toHexString();
-        return plainToClass(clazz, {id, ...object}, options.classTransformOptions);
+        const classObject: M = plainToClass(clazz, {id, ...object}, options.classTransformOptions);
+        if (options.validateGet) {
+            await validate(classObject, options.validatorOptions)
+                .then((errors: ReadonlyArray<ValidationError>) => {
+                    if (errors.length) {
+                        throw new RepositoryValidationError(errors);
+                    }
+                    return;
+                });
+        }
+        return classObject;
     }
 
 }

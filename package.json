@@ -1,12 +1,12 @@
 {
   "name": "repository-generic",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "scripts": {
     "build": "rimraf build && tsc -p tsconfig.build.json",
-    "test": "npm run build && cross-env NODE_ENV=test nyc mocha test/**/*.ts"
+    "test": "cross-env NODE_ENV=test nyc mocha test/**/*.ts"
   },
   "author": "Alex Natashkin <natashkinsasha@gmail.com>",
   "license": "ISC",
