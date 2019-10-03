@@ -7,8 +7,6 @@ import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import NameUserSpecification from "./user/NameUserSpecification";
-import * as faker from "faker";
-import RepositoryValidationError from "../src/error/RepositoryValidationError";
 
 
 describe('Test UserRepository#clean', () => {
@@ -53,14 +51,13 @@ describe('Test UserRepository#clean', () => {
 
         it('1', (done) => {
             const user = createCreateUser({});
-            const newName = faker.name.findName();
             userRepository
                 .add(user)
                 .then(() => {
-                    return userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName});
+                    return userRepository.findOneAndDelete(new NameUserSpecification(user.name));
                 })
                 .then((newUser: User)=>{
-                    validateUser(newUser, {...user, name: newName, version: 1});
+                    validateUser(newUser, {...user});
                     done();
                 })
                 .catch(done);
@@ -83,14 +80,13 @@ describe('Test UserRepository#clean', () => {
 
         it('1', (done) => {
             const user = createCreateUser({});
-            const newName = faker.name.findName();
             userRepository
                 .add(user)
                 .then(() => {
-                    return userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName});
+                    return userRepository.findOneAndDelete(new NameUserSpecification(user.name));
                 })
                 .then((newUser: User)=>{
-                    validateUser(newUser, {...user, name: newName, version: 1});
+                    validateUser(newUser, {...user});
                     done();
                 })
                 .catch(done);
@@ -98,8 +94,7 @@ describe('Test UserRepository#clean', () => {
 
         it('2', (done) => {
             const user = createCreateUser({});
-            const newName = faker.name.findName();
-            userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName})
+            userRepository.findOneAndDelete(new NameUserSpecification(user.name))
                 .then((newUser?: User)=>{
                     expect(newUser).to.be.a('undefined');
                     done();
@@ -107,18 +102,5 @@ describe('Test UserRepository#clean', () => {
                 .catch(done);
         });
 
-        it('3', (done) => {
-            const user = createCreateUser({});
-            const newName: any = 1;
-            userRepository
-                .add(user)
-                .then(() => {
-                    return expect(userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName})).to.be.rejectedWith(RepositoryValidationError);
-                })
-                .then(()=>{
-                    done();
-                })
-                .catch(done);
-        });
     });
 });

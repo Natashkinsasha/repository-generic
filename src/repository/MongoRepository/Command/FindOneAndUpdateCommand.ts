@@ -19,7 +19,7 @@ export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>
                 if (repositoryOptions.validateUpdate) {
                     await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date()}, clazz, repositoryOptions)
                 }
-                const query = this.specification && this.specification.specified() || {};
+                const query = this.specification && this.specification.specified();
                 if (repositoryOptions.softDelete) {
                     const or = query['$or'] || [];
                     return collection

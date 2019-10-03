@@ -26,6 +26,7 @@ import TransactionCommand from "./Command/TransactionCommand";
 import CreateIndexCommand from "./Command/CreateIndexCommand";
 import {validate, ValidationError} from "class-validator";
 import RepositoryValidationError from "../../error/RepositoryValidationError";
+import FindOneAndDeleteCommand from "./Command/FindOneAndDeleteCommand";
 
 
 export declare interface ClassType<T> {
@@ -101,6 +102,11 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
     public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {
         return new FindAndUpdateCommand(specification, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
+
+    public findOneAndDelete(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<M | void> {
+        return new FindOneAndDeleteCommand(specification, options).execute(this.getCollection(), this.getClass(), this.options);
+    }
+
 
     public clean(options?: CommonOptions): Promise<number> {
         return new CleanCommand(options).execute(this.getCollection(), this.getClass(), this.options);
