@@ -24,7 +24,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                 }
                 if (repositoryOptions.softDelete) {
                     return collection
-                        .findOneAndUpdate(
+                        .findOneAndReplace(
                             {
                                 _id: new ObjectId(this.model.id),
                                 $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]
@@ -34,7 +34,7 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
                         )
                 }
                 return collection
-                    .findOneAndUpdate(
+                    .findOneAndReplace(
                         {_id: new ObjectId(this.model.id)},
                         this.getReplaceObject(this.model, repositoryOptions),
                         {returnOriginal: false, ...this.options}
@@ -49,26 +49,18 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
     }
 
     private getReplaceObject(model: M, repositoryOptions: IRepositoryOptions) {
-        const {version, ...uModel} = {version: 0, ...model};
+        const {id, ...uModel} = model;
         return {
-            $set: {
-                ...uModel, ...Object.entries(repositoryOptions)
-                    .reduce((additionalProperty, [key, value]) => {
-                        if (key === "lastUpdatedAt" && value) {
-                            return {...additionalProperty, lastUpdatedAt: new Date()};
-                        }
-                        return additionalProperty;
-                    }, {})
-            },
-            $inc: {
-                ...Object.entries(repositoryOptions)
-                    .reduce((additionalProperty, [key, value]) => {
-                        if (key === "version" && value) {
-                            return {...additionalProperty, version: 1};
-                        }
-                        return additionalProperty;
-                    }, {})
-            },
+            ...uModel, ...Object.entries(repositoryOptions)
+                .reduce((additionalProperty, [key, value]) => {
+                    if (key === "lastUpdatedAt" && value) {
+                        return {...additionalProperty, lastUpdatedAt: new Date()};
+                    }
+                    if (key === "version" && value) {
+                        return {...additionalProperty, version: (model["version"] || 0) + 1};
+                    }
+                    return additionalProperty;
+                }, {}),
         };
     }
 

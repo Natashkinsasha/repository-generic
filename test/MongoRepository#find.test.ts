@@ -111,6 +111,23 @@ describe('Test UserRepository#find', () => {
                 .catch(done);
         });
 
+        it('4', (done) => {
+            const name = faker.name.findName();
+            Promise
+                .all([
+                    userRepository.add(createCreateUser({name})),
+                ])
+                .then(() => {
+                    return userRepository.find(new NameUserSpecification(name));
+                })
+                .then((users: User[]) => {
+                    expect(users).to.have.lengthOf(1);
+                    validateUser(users[0], {name});
+                    done();
+                })
+                .catch(done);
+        });
+
     });
 
 
