@@ -8,14 +8,14 @@ import {plainToClass} from "class-transformer";
 import RepositoryValidationError from "../../../error/RepositoryValidationError";
 
 
-export default class ReplaceCommand<M extends Model> implements ICommand<M, M | void> {
+export default class ReplaceCommand<M extends Model, C> implements ICommand<M, C | void, C> {
 
 
     constructor(private model: M, private options?: FindOneAndUpdateOption) {
     }
 
 
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<void | C> {
         return Promise
             .resolve()
             .then(async () => {
@@ -45,7 +45,7 @@ export default class ReplaceCommand<M extends Model> implements ICommand<M, M | 
         };
     }
 
-    private validateReplaceModel(model: M, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+    private validateReplaceModel(model: M, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<void> {
         return validate(plainToClass(clazz, model), repositoryOptions.validatorOptions).then((errors: ReadonlyArray<ValidationError>) => {
             if (errors.length) {
                 throw new RepositoryValidationError(errors);

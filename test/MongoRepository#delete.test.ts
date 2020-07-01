@@ -3,8 +3,11 @@ import * as redis from "redis";
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
+import {plainToClass} from "class-transformer";
+import User from "./user/User";
+import { ObjectId } from "mongodb";
 
 
 describe('Test UserRepository#delete', () => {
@@ -40,7 +43,7 @@ describe('Test UserRepository#delete', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient);
+            userRepository = new UserRepository(db, mongoClient, redisClient, {customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),});
         })
 
         it('1', (done) => {
@@ -52,10 +55,10 @@ describe('Test UserRepository#delete', () => {
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});
-                    return userRepository.delete(newUser._id)
+                    return userRepository.delete(new ObjectId(newUser.id))
                         .then(() => {
                             // validateUser(deletedUser, { ...user, version: 0 });
-                            return userRepository.get(newUser._id);
+                            return userRepository.get(new ObjectId(newUser.id));
                         });
                 })
                 .then((user: User | void) => {

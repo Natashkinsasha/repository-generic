@@ -3,9 +3,11 @@ import * as redis from "redis";
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
+import {plainToClass} from "class-transformer";
+import User from "./user/User";
 
 
 describe('Test UserRepository#update', () => {
@@ -41,7 +43,7 @@ describe('Test UserRepository#update', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient);
+            userRepository = new UserRepository(db, mongoClient, redisClient, {customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),});
         });
 
         it('1', (done) => {
@@ -68,6 +70,7 @@ describe('Test UserRepository#update', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateUpdate: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 

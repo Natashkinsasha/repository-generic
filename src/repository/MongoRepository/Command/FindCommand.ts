@@ -6,7 +6,7 @@ import IRepositoryOptions from "../../IRepositoryOptions";
 import IMongoSpecification from "../../../specification/IMongoSpecification";
 
 
-export default class FindCommand<M extends Model> implements ICommand<M, ReadonlyArray<M>> {
+export default class FindCommand<M extends Model, C> implements ICommand<M, ReadonlyArray<C>, C> {
 
     constructor(private specification?: IMongoSpecification<M>,
                 private skip: number = 0,
@@ -15,7 +15,7 @@ export default class FindCommand<M extends Model> implements ICommand<M, Readonl
                 private options?: FindOneOptions) {
     }
 
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<ReadonlyArray<M>> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<ReadonlyArray<C>> {
         return this.buildLimit(this.buildSkip(this.buildSort(this.buildFind(repositoryOptions, collection, this.specification, this.options), this.sort), this.skip), this.limit)
             .toArray()
             .then((array: ReadonlyArray<M>) => {
@@ -25,7 +25,7 @@ export default class FindCommand<M extends Model> implements ICommand<M, Readonl
 
 
     private buildFind(
-        repositoryOptions: IRepositoryOptions,
+        repositoryOptions: IRepositoryOptions<M, C>,
         collection: Collection<M>,
         specification?: IMongoSpecification<M>,
         options?: FindOneOptions

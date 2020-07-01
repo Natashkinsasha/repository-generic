@@ -3,10 +3,13 @@ import * as redis from "redis";
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import NameUserSpecification from "./user/NameUserSpecification";
+import {plainToClass} from "class-transformer";
+import User from "./user/User";
+import { ObjectId } from "mongodb";
 
 
 describe('Test UserRepository#find', () => {
@@ -44,6 +47,7 @@ describe('Test UserRepository#find', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateGet: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         })
 
@@ -58,7 +62,7 @@ describe('Test UserRepository#find', () => {
                 })
                 .then((users: User[]) => {
                     expect(users).to.have.lengthOf(2);
-                    return userRepository.delete(users[0]._id);
+                    return userRepository.delete(new ObjectId(users[0].id));
                 })
                 .then(() => {
                     return userRepository.find();

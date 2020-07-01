@@ -4,11 +4,13 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import {MongoError} from "mongodb";
+import {MongoError, ObjectId} from "mongodb";
 import RepositoryValidationError from "../src/error/RepositoryValidationError";
+import User from "./user/User";
+import {plainToClass} from "class-transformer";
 
 
 describe('Test UserRepository#replace', () => {
@@ -46,6 +48,7 @@ describe('Test UserRepository#replace', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateReplace: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 
@@ -58,7 +61,8 @@ describe('Test UserRepository#replace', () => {
                     return userRepository.get(id);
                 })
                 .then((user: User) => {
-                    return userRepository.replace({...user, name: newName});
+                    const {id, ...uUser} = user;
+                    return userRepository.replace({_id: new ObjectId(id), ...uUser, name: newName});
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, name: newName, version: 1});
@@ -76,7 +80,8 @@ describe('Test UserRepository#replace', () => {
                     return userRepository.get(id);
                 })
                 .then((user: User) => {
-                    return expect(userRepository.replace({...user, name: newName})).to.be.rejectedWith(RepositoryValidationError);
+                    const {id, ...uUser} = user;
+                    return expect(userRepository.replace({_id: new ObjectId(id), ...uUser, name: newName})).to.be.rejectedWith(RepositoryValidationError);
                 })
                 .then(() => {
                     done();
@@ -93,10 +98,11 @@ describe('Test UserRepository#replace', () => {
                     return userRepository.get(id);
                 })
                 .then(async (user: User) => {
-                    await userRepository.delete(user._id);
-                    return userRepository.replace({...user, name: newName});
+                    await userRepository.delete(new ObjectId(user.id));
+                    const {id, ...uUser} = user;
+                    return userRepository.replace({_id: new ObjectId(id), ...uUser, name: newName});
                 })
-                .then((newUser: User) => {
+                .then((newUser?: User) => {
                     expect(newUser).to.be.a('undefined');
                     done();
                 })

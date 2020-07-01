@@ -4,6 +4,8 @@ import * as redis from "redis";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser} from "./util";
+import UserEntity from "./user/UserEntity";
+import {plainToClass} from "class-transformer";
 import User from "./user/User";
 
 
@@ -41,6 +43,7 @@ describe('Test UserRepository#clean', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateAdd: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 

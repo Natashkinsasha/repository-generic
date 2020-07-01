@@ -15,14 +15,14 @@ import {plainToClass} from "class-transformer";
 import RepositoryValidationError from "../../../error/RepositoryValidationError";
 
 
-export default class UpdateCommand<M extends Model> implements ICommand<M, M | void> {
+export default class UpdateCommand<M extends Model, C> implements ICommand<M, C | void, C> {
 
 
     constructor(private _id: ObjectId, private  model: UpdateModel<M>, private options?: FindOneAndUpdateOption) {
     }
 
 
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<void | C> {
         return Promise.resolve()
             .then(async () => {
                 if (repositoryOptions.validateUpdate) {
@@ -60,7 +60,7 @@ export default class UpdateCommand<M extends Model> implements ICommand<M, M | v
         );
     }
 
-    private getUpdateObject(model: UpdateModel<M>, repositoryOptions: IRepositoryOptions) {
+    private getUpdateObject(model: UpdateModel<M>, repositoryOptions: IRepositoryOptions<M,C>) {
         const {version, ...uModel} = {version: 0, ...model};
         return {
             $set: {

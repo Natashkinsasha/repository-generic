@@ -4,12 +4,11 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
-import * as faker from "faker";
+import UserEntity from "./user/UserEntity";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
-import NameUserSpecification from "./user/NameUserSpecification";
-import RepositoryValidationError from "../src/error/RepositoryValidationError";
+import User from "./user/User";
+import { ObjectId } from "mongodb";
+import {plainToClass} from "class-transformer";
 
 
 describe('Test UserRepository#get', () => {
@@ -45,7 +44,7 @@ describe('Test UserRepository#get', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient);
+            userRepository = new UserRepository(db, mongoClient, redisClient, {customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),});
         })
 
         it('1', (done) => {
@@ -57,7 +56,7 @@ describe('Test UserRepository#get', () => {
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});
-                    return userRepository.get(newUser._id);
+                    return userRepository.get(new ObjectId(newUser.id));
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});

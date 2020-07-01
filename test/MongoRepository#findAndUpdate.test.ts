@@ -4,11 +4,13 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import NameUserSpecification from "./user/NameUserSpecification";
 import RepositoryValidationError from "../src/error/RepositoryValidationError";
+import {plainToClass} from "class-transformer";
+import User from "./user/User";
 
 
 describe('Test UserRepository#findAndUpdate', () => {
@@ -44,7 +46,7 @@ describe('Test UserRepository#findAndUpdate', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient);
+            userRepository = new UserRepository(db, mongoClient, redisClient, {customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),});
         })
 
         it('1', (done) => {
@@ -69,6 +71,7 @@ describe('Test UserRepository#findAndUpdate', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateUpdate: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 
@@ -81,7 +84,7 @@ describe('Test UserRepository#findAndUpdate', () => {
                     await userRepository.delete(_id);
                     return userRepository.findAndUpdate(new NameUserSpecification(name), {name: faker.name.findName()});
                 })
-                .then((user: User | void) => {
+                .then((user: UserEntity | void) => {
                     expect(user).to.be.a('undefined');
                     done();
                 })

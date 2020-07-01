@@ -3,11 +3,13 @@ import * as redis from "redis";
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
+import {plainToClass} from "class-transformer";
+import User from "./user/User";
 
 
 describe('Test UserRepository#findOne', () => {
@@ -45,6 +47,7 @@ describe('Test UserRepository#findOne', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateGet: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 
@@ -57,7 +60,7 @@ describe('Test UserRepository#findOne', () => {
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, {...user, version: 0, isDeleted: false});
+                    validateUser(newUser, {...user, version: 0});
                     done();
                 })
                 .catch(done);
@@ -87,6 +90,7 @@ describe('Test UserRepository#findOne', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateGet: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 
@@ -99,7 +103,7 @@ describe('Test UserRepository#findOne', () => {
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User) => {
-                    validateUser(newUser, {...user, version: 0, isDeleted: false});
+                    validateUser(newUser, {...user, version: 0});
                     done();
                 })
                 .catch(done);

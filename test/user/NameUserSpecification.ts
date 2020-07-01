@@ -1,8 +1,8 @@
-import User from "./User";
+import UserEntity from "./UserEntity";
 import IMongoSpecification from "../../src/specification/IMongoSpecification"
 import {FilterQuery} from "mongodb";
 
-export default class NameUserSpecification implements IMongoSpecification<User>{
+export default class NameUserSpecification implements IMongoSpecification<UserEntity>{
 
     private readonly name: string;
 
@@ -10,7 +10,7 @@ export default class NameUserSpecification implements IMongoSpecification<User>{
         this.name = name;
     }
 
-    public specified(): FilterQuery<User> {
+    public specified(): FilterQuery<UserEntity> {
         return {
             name: this.name,
         };

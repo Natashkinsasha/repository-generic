@@ -1,15 +1,21 @@
-import {Expose, Transform, Type} from "class-transformer";
-import {Object} from "../../src/util";
-import UserEntity from "./UserEntity";
+import "reflect-metadata"
+import {
+    IsBoolean,
+    IsDate,
+    IsNumber,
+    IsOptional,
+    IsString,
+    ValidateNested
+} from 'class-validator';
+import {Expose, Type} from "class-transformer";
 import Purchase from "./Purchase";
-import {IsDate, IsNumber, IsString, ValidateNested} from "class-validator";
+import { ObjectId } from "mongodb";
+import {Model} from "../../src/repository/IMongoRepository";
 
 
-export default class User implements Object<UserEntity>{
+export default class UserEntity implements Model{
     @Expose()
-    @IsString()
-    @Transform((value, object)=> object.id || object._id.toHexString())
-    public readonly id: string;
+    public _id: ObjectId;
     @IsString()
     @Expose()
     public name: string;

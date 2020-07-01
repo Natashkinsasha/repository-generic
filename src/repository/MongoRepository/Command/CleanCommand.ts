@@ -5,13 +5,13 @@ import {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 
 
-export default class CleanCommand<M extends Model> implements ICommand<M, number> {
+export default class CleanCommand<M extends Model, C> implements ICommand<M, number, C> {
 
     constructor(private options?: CommonOptions) {
     }
 
 
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<number> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<number> {
         return collection
             .deleteMany({}, this.options)
             .then((resultObject: DeleteWriteOpResultObject) => {

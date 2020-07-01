@@ -9,13 +9,13 @@ import {plainToClass} from "class-transformer";
 import RepositoryValidationError from "../../../error/RepositoryValidationError";
 
 
-export default class FindAndUpdateCommand<M extends Model>implements ICommand<M, void>{
+export default class FindAndUpdateCommand<M extends Model, C>implements ICommand<M, void, C>{
 
     constructor(private specification: IMongoSpecification<M>, private model: UpdateModel<M>, private options?: UpdateManyOptions){
 
     }
 
-    public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+    public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<void> {
         const query = this.specification.specified();
         if (repositoryOptions.validateUpdate) {
             await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date()}, clazz, repositoryOptions)
@@ -35,7 +35,7 @@ export default class FindAndUpdateCommand<M extends Model>implements ICommand<M,
             });
     }
 
-    private validateUpdateModel(model: UpdateModel<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+    private validateUpdateModel(model: UpdateModel<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<void> {
         return validate(plainToClass(clazz, model), {...repositoryOptions.validatorOptions, skipMissingProperties: true}).then(
             (errors: ReadonlyArray<ValidationError>) => {
                 if (errors.length) {

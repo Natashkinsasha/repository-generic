@@ -24,18 +24,18 @@ export type UpdateModel<M> = Partial<CreateModel<M>>;
 
 
 
-export default interface IMongoRepository<M extends Model> extends IRepository<M, ObjectId, CreateModel<M>, UpdateModel<M>, FilterQuery<M>, IMongoSpecification<M>> {
+export default interface IMongoRepository<M extends Model, C> extends IRepository<C, ObjectId, CreateModel<M>, UpdateModel<M>, FilterQuery<M>, IMongoSpecification<M>> {
     transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T>;
 
     createIndexes(indexSpecs: IndexSpecification[]): Promise<void>;
 
     add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<ObjectId>;
 
-    get(_id: ObjectId, options?: FindOneOptions): Promise<M | void>;
+    get(_id: ObjectId, options?: FindOneOptions): Promise<C | void>;
 
-    replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M>;
+    replace(model: M, options?: FindOneAndUpdateOption): Promise<void | C>;
 
-    update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void>;
+    update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void>;
 
     delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean>;
 
@@ -45,11 +45,11 @@ export default interface IMongoRepository<M extends Model> extends IRepository<M
         limit?: number,
         sort?: Map<string, number>,
         options?: FindOneOptions
-    ): Promise<ReadonlyArray<M>>;
+    ): Promise<ReadonlyArray<C>>;
 
-    findOne(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<M | void>;
+    findOne(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<C | void>;
 
-    findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void>;
+    findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void>;
 
     findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void>;
 

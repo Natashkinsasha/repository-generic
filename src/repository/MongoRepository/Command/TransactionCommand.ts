@@ -5,12 +5,12 @@ import {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 
 
-export default class TransactionCommand<M extends Model, T> implements ICommand<M, T>{
+export default class TransactionCommand<M extends Model, T, C> implements ICommand<M, T, C>{
 
     constructor(private client: MongoClient, private cb: (session: ClientSession) => Promise<T>){}
 
 
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<T> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<T> {
         const session = this.client.startSession();
         session.startTransaction();
         return this.cb(session)

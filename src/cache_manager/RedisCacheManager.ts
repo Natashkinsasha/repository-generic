@@ -4,7 +4,7 @@ import {ClassType} from '../repository/MongoRepository/MongoRepository';
 import ICacheManager from './ICacheManager';
 import {Model} from "../repository/IMongoRepository";
 
-export default abstract class RedisCacheManager<T extends Model> implements ICacheManager<T> {
+export default abstract class RedisCacheManager<T extends {id: string}> implements ICacheManager<T> {
     constructor(private readonly redisClient: RedisClient) {
     }
 
@@ -37,7 +37,7 @@ export default abstract class RedisCacheManager<T extends Model> implements ICac
     public save(object: T): Promise<T> {
         return new Promise((resolve, reject) => {
             return this.redisClient.set(
-                `${this.getCollectionName()}:${object._id.toHexString()}`,
+                `${this.getCollectionName()}:${object.id}`,
                 JSON.stringify(classToPlain(object)),
                 (err: Error | null) => {
                     if (err) {

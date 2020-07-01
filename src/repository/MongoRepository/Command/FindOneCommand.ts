@@ -6,12 +6,12 @@ import IRepositoryOptions from "../../IRepositoryOptions";
 import IMongoSpecification from "../../../specification/IMongoSpecification";
 
 
-export default class FindOneCommand<M extends Model> implements ICommand<M, M | void> {
+export default class FindOneCommand<M extends Model, C> implements ICommand<M, C | void, C> {
 
     constructor(private specification: IMongoSpecification<M>, private options?: FindOneOptions) {
     }
 
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<C | void> {
         return Promise.resolve()
             .then(()=>{
                 const query = this.specification.specified();

@@ -5,11 +5,11 @@ import * as chaiAsPromised from "chai-as-promised";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import NameUserSpecification from "./user/NameUserSpecification";
 import * as faker from "faker";
-import RepositoryValidationError from "../src/error/RepositoryValidationError";
-
+import {plainToClass} from "class-transformer";
+import User from "./user/User";
 
 describe('Test UserRepository#clean', () => {
     chai.use(chaiAsPromised);
@@ -45,6 +45,7 @@ describe('Test UserRepository#clean', () => {
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
                 validateUpdate: true,
+                customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
         });
 

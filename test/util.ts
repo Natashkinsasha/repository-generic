@@ -2,12 +2,13 @@ import * as faker from "faker";
 import * as chai from "chai";
 import { plainToClass } from 'class-transformer';
 import { ObjectId } from 'bson';
-import User from "./user/User";
+import UserEntity from "./user/UserEntity";
 import {CreateModel} from "../src";
+import User from "./user/User";
 
 const { expect } = chai;
 
-export function createCreateUser(user: Partial<User>): CreateModel<User>{
+export function createCreateUser(user: Partial<UserEntity>): CreateModel<UserEntity>{
     return {
         name: faker.name.findName(),
         purchase: [],
@@ -15,7 +16,7 @@ export function createCreateUser(user: Partial<User>): CreateModel<User>{
     };
 }
 
-export function validateUser(user: User, expectUser?: Partial<User>): void{
+export function validateUser(user: User, expectUser?: Partial<UserEntity>): void{
     expect(user).to.be.a('object');
 
 
@@ -31,7 +32,5 @@ export function validateUser(user: User, expectUser?: Partial<User>): void{
     expect(user.createdAt).to.be.an.instanceof(Date);
     expect(user.lastUpdatedAt).to.be.an.instanceof(Date);
 
-    user.isDeleted && expect(user.isDeleted).to.be.a('boolean');
-    expectUser && expectUser.isDeleted && expect(user.isDeleted).to.equal(expectUser.isDeleted);
 
 }
