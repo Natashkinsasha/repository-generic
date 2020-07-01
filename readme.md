@@ -142,9 +142,9 @@ class UserRepository extends MongoRepository<UserEntity, User> {
 ```typescript
 
 import {FilterQuery, IMongoSpecification, Entity} from "repository-generic"
-import User from "./User";
+import UserEntity from "./UserEntity";
 
-export default class NameUserSpecification implements IMongoSpecification<User>{
+export default class NameUserSpecification implements IMongoSpecification<UserEntity>{
 
     private readonly name: string;
 
@@ -152,7 +152,7 @@ export default class NameUserSpecification implements IMongoSpecification<User>{
         this.name = name;
     }
 
-    specified(): FilterQuery<Entity<User>> {
+    public specified(): FilterQuery<UserEntity> {
         return {
             name: this.name,
         };
