@@ -8,7 +8,8 @@ import IMongoSpecification from "./specification/IMongoSpecification";
 import ISpecification from "./specification/ISpecification";
 import MongoDbHelper from "./helper/MongoDbHelper";
 import {ClassType} from "./repository/MongoRepository/MongoRepository"
-import {CreateModel, UpdateModel} from "./repository/IMongoRepository"
+import {CreateModel, UpdateModel, Model} from "./repository/IMongoRepository"
+import {Object} from "./util"
 
 export {
     ICacheManager,
@@ -23,4 +24,6 @@ export {
     ClassType,
     CreateModel,
     UpdateModel,
+    Object,
+    Model,
 }

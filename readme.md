@@ -25,12 +25,14 @@ This library is quite fresh, and maybe has bugs. Write me an **email** to *natas
 
 This library can be use with JavaScript, but better use one with TypeScript.
 
-### Defining model
+### Defining models
 
 ```typescript
 import "reflect-metadata"
+import { ObjectId } from "mongodb";
 import { IsOptional, IsString, IsDate, IsInt, IsOptional, IsString, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
 import { Type, Expose } from "class-transformer";
+import { Model } from "repository-generic";
 
 class Purchase {
     @Expose()
@@ -39,9 +41,9 @@ class Purchase {
     public createdAt: Date;
 }
 
-export default class User {
+export default class UserEntity extends Model {
     @Expose()
-    public id: string;
+    public _id: ObjectId;
     @IsString()
     @IsOptional()
     @Expose()
@@ -70,14 +72,50 @@ export default class User {
 }
 ```
 
+```typescript
+import {Expose, Transform, Type} from "class-transformer";
+import {Object} from "repository-generic";
+import UserEntity from "./UserEntity";
+import Purchase from "./Purchase";
+import {IsDate, IsNumber, IsString, ValidateNested} from "class-validator";
+
+export default class User implements Object<UserEntity>{
+    @Expose()
+    @IsString()
+    @Transform((value, object)=> object.id || object._id.toHexString())
+    public readonly id: string;
+    @IsString()
+    @Expose()
+    public name: string;
+    @IsDate()
+    @Type(() => Date)
+    @Expose()
+    public createdAt: Date;
+    @IsDate()
+    @Type(() => Date)
+    @Expose()
+    public lastUpdatedAt: Date;
+    @IsNumber()
+    public version: number;
+    @Type(() => Purchase)
+    @ValidateNested({
+        each: true,
+    })
+    @Expose()
+    public purchase: Purchase[];
+}
+```
+
 ### Create MongoRepository
 
 ```typescript
 import { Db, MongoClient } from 'mongodb';
-import { MongoRepository, ClassType, IRepositoryOptions } from "repository-generic";
+import {plainToClass} from "class-transformer";
+import { MongoRepository, ClassType } from "repository-generic";
 import User from "./User"
+import UserEntity from "./UserEntity"
 
-class UserRepository extends MongoRepository<User> {
+class UserRepository extends MongoRepository<UserEntity, User> {
     constructor(db: Db, client: MongoClient) {
         super(db, client, {
             version: true,
@@ -88,11 +126,12 @@ class UserRepository extends MongoRepository<User> {
             validateAdd: true,
             validateGet: true,
             classTransformOptions: { excludeExtraneousValues: true },
+            customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity)
         });
     }
 
-    protected getClass(): ClassType<User> {
-        return User;
+    protected getClass(): ClassType<UserEntity> {
+        return UserEntity;
     }
 }
 
