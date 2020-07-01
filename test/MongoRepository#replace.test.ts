@@ -40,14 +40,11 @@ describe('Test UserRepository#replace', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateReplace: true}', () => {
+    describe('#{validateReplace: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateReplace: true,
             });
         });
@@ -57,7 +54,7 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository.get(id);
                 })
                 .then((user: User) => {
@@ -75,7 +72,7 @@ describe('Test UserRepository#replace', () => {
             const newName: any = 1;
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository.get(id);
                 })
                 .then((user: User) => {
@@ -92,42 +89,11 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository.get(id);
                 })
                 .then(async (user: User) => {
-                    await userRepository.delete(user.id);
-                    return userRepository.replace({...user, name: newName});
-                })
-                .then((newUser: User) => {
-                    expect(newUser).to.be.a('undefined');
-                    done();
-                })
-                .catch(done);
-        });
-    });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
-            });
-        });
-        it('1', (done) => {
-            const user = createCreateUser({});
-            const newName = faker.name.findName();
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
-                })
-                .then(async (user: User) => {
-                    await userRepository.delete(user.id);
+                    await userRepository.delete(user._id);
                     return userRepository.replace({...user, name: newName});
                 })
                 .then((newUser: User) => {

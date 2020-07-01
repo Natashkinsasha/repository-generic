@@ -1,6 +1,6 @@
 import ICommand from "./ICommand";
-import {CreateModel, Entity} from "../../IMongoRepository";
-import {Collection, CollectionInsertOneOptions, InsertOneWriteOpResult} from "mongodb";
+import {CreateModel, Model} from "../../IMongoRepository";
+import {Collection, CollectionInsertOneOptions, OptionalId, ObjectId} from "mongodb";
 import {validate, ValidationError} from "class-validator";
 import {plainToClass} from "class-transformer";
 import RepositoryValidationError from "../../../error/RepositoryValidationError";
@@ -8,47 +8,28 @@ import {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 
 
-export default class AddCommand<M> implements ICommand<M, string> {
+export default class AddCommand<M extends Model> implements ICommand<M, ObjectId> {
 
-    constructor(private model: CreateModel<M>, private  options?: CollectionInsertOneOptions) {
+    constructor(private readonly model: CreateModel<M>, private readonly options?: CollectionInsertOneOptions) {
 
     }
 
-    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<string> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<ObjectId> {
         return Promise.resolve()
             .then(async () => {
-                if (repositoryOptions.softDelete) {
-                    const model = {
-                        ...this.model, ...this.createAdditionalProperty(repositoryOptions),
-                        isDeleted: false
-                    };
-                    if (repositoryOptions.validateAdd) {
-                        await this.validateCreateModel({
-                            ...this.model, ...this.createAdditionalProperty(repositoryOptions),
-                            isDeleted: false
-                        }, clazz, repositoryOptions)
-                    }
-                    return collection.insertOne(model, this.options)
-                        .then((result: InsertOneWriteOpResult) => {
-                            return result.insertedId.toHexString();
-                        });
-                }
-                const model = {...this.model, ...this.createAdditionalProperty(repositoryOptions)};
+                const model: any = {...this.model, ...AddCommand.createAdditionalProperty()};
                 if (repositoryOptions.validateAdd) {
-                    await this.validateCreateModel({...this.model, ...this.createAdditionalProperty(repositoryOptions)}, clazz, repositoryOptions);
+                    await this.validateCreateModel(model, clazz, repositoryOptions);
                 }
                 return collection.insertOne(model, this.options)
-                    .then((result: InsertOneWriteOpResult) => {
-                        return result.insertedId.toHexString();
+                    .then((result) => {
+                        return result.insertedId;
                     });
             });
     }
 
-    private validateCreateModel(model: CreateModel<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
+    private validateCreateModel(model: OptionalId<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void> {
         return validate(plainToClass(clazz, model), repositoryOptions.validatorOptions)
-            .then((errors: ReadonlyArray<ValidationError>) => {
-                return errors.filter((error: ValidationError) => (error.property !== 'id'));
-            })
             .then((errors: ReadonlyArray<ValidationError>) => {
                 if (errors.length) {
                     throw new RepositoryValidationError(errors);
@@ -57,23 +38,12 @@ export default class AddCommand<M> implements ICommand<M, string> {
             });
     }
 
-    private createAdditionalProperty(options: IRepositoryOptions): { version?: number, createdAt?: string, lastUpdatedAt?: string, softDelete?: boolean } {
-        return Object.entries(options)
-            .reduce((additionalProperty, [key, value]) => {
-                if (key === "version" && value) {
-                    return {...additionalProperty, version: 0};
-                }
-                if (key === "createdAt" && value) {
-                    return {...additionalProperty, createdAt: new Date()};
-                }
-                if (key === "lastUpdatedAt" && value) {
-                    return {...additionalProperty, lastUpdatedAt: new Date()};
-                }
-                if (key === "softDelete" && value) {
-                    return {...additionalProperty, isDeleted: false};
-                }
-                return additionalProperty;
-            }, {});
+    private static createAdditionalProperty(): OptionalId<Model> {
+        return {
+            version: 0,
+            createdAt: new Date(),
+            lastUpdatedAt: new Date()
+        }
     }
 
 }

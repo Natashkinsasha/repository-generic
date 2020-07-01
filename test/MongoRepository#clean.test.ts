@@ -35,56 +35,12 @@ describe('Test UserRepository#clean', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
+    describe('#{validateAdd: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateAdd: true,
-            });
-        });
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            userRepository
-                .add(user)
-                .then(() => {
-                    return userRepository.clean();
-                })
-                .then((count: number)=>{
-                    expect(count).to.equal(1);
-                    return userRepository.find();
-                })
-                .then((users: Array<User>)=>{
-                    expect(users).to.have.length(0);
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            userRepository.clean()
-                .then((count: number)=>{
-                    expect(count).to.equal(0);
-                    done();
-                })
-                .catch(done);
-        });
-    });
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true, softDelete: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                validateAdd: true,
-                softDelete: true,
             });
         });
 

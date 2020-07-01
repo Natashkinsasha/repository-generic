@@ -39,14 +39,11 @@ describe('Test UserRepository#clean', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateUpdate: true}', () => {
+    describe('#{validateUpdate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateUpdate: true,
             });
         });
@@ -61,61 +58,6 @@ describe('Test UserRepository#clean', () => {
                 })
                 .then((newUser: User)=>{
                     validateUser(newUser, {...user, name: newName, version: 1});
-                    done();
-                })
-                .catch(done);
-        });
-    });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateUpdate: true, softDelete: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                validateUpdate: true,
-                softDelete: true,
-            });
-        });
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            const newName = faker.name.findName();
-            userRepository
-                .add(user)
-                .then(() => {
-                    return userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName});
-                })
-                .then((newUser: User)=>{
-                    validateUser(newUser, {...user, name: newName, version: 1});
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            const user = createCreateUser({});
-            const newName = faker.name.findName();
-            userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName})
-                .then((newUser?: User)=>{
-                    expect(newUser).to.be.a('undefined');
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('3', (done) => {
-            const user = createCreateUser({});
-            const newName: any = 1;
-            userRepository
-                .add(user)
-                .then(() => {
-                    return expect(userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName})).to.be.rejectedWith(RepositoryValidationError);
-                })
-                .then(()=>{
                     done();
                 })
                 .catch(done);

@@ -38,14 +38,11 @@ describe('Test UserRepository#find', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{validateGet: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateGet: true,
             });
         })
@@ -61,7 +58,7 @@ describe('Test UserRepository#find', () => {
                 })
                 .then((users: User[]) => {
                     expect(users).to.have.lengthOf(2);
-                    return userRepository.delete(users[0].id);
+                    return userRepository.delete(users[0]._id);
                 })
                 .then(() => {
                     return userRepository.find();
@@ -129,45 +126,4 @@ describe('Test UserRepository#find', () => {
         });
 
     });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
-
-        let userRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
-                validateGet: true,
-            });
-        });
-
-        it('1', (done) => {
-            Promise
-                .all([
-                    userRepository.add(createCreateUser({})),
-                    userRepository.add(createCreateUser({})),
-                ])
-                .then(() => {
-                    return userRepository.find();
-                })
-                .then((users: User[]) => {
-                    expect(users).to.have.lengthOf(2);
-                    return userRepository.delete(users[0].id);
-                })
-                .then(() => {
-                    return userRepository.find();
-                })
-                .then((users: User[]) => {
-                    expect(users).to.have.lengthOf(1);
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
-
 });

@@ -6,33 +6,24 @@ import {
     FindAndModifyWriteOpResultObject, FindOneAndDeleteOption,
     ObjectId
 } from "mongodb";
-import {Entity} from "../../IMongoRepository";
+import {Model} from "../../IMongoRepository";
 import MongoRepository, {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 import IMongoSpecification from "../../../specification/IMongoSpecification";
 
 
-export default class FindOneAndDeleteCommand<M> implements ICommand<M, M | void>{
+export default class FindOneAndDeleteCommand<M extends Model> implements ICommand<M, M | void>{
 
     constructor(private specification: IMongoSpecification<M>, private options?: FindOneAndDeleteOption){}
 
-    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
-        const query = this.specification && this.specification.specified();
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
+        const query = this.specification.specified();
         return Promise.resolve()
             .then(()=>{
-                if (repositoryOptions.softDelete) {
-                    const or = query['$or'] || [];
-                    return collection
-                        .findOneAndUpdate(
-                            {...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]},
-                            {$set: {isDeleted: true}},
-                            {returnOriginal: false, ...this.options}
-                        );
-                }
                 return collection
                     .findOneAndDelete(query, this.options);
             })
-            .then(async (result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+            .then(async (result: FindAndModifyWriteOpResultObject<M>) => {
                 if (!result.value) {
                     return;
                 }

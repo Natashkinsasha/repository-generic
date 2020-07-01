@@ -1,6 +1,6 @@
 import ICommand from "./ICommand";
-import {Collection, FindAndModifyWriteOpResultObject, FindOneAndUpdateOption} from "mongodb";
-import {Entity, UpdateModel} from "../../IMongoRepository";
+import {Collection, FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, UpdateQuery} from "mongodb";
+import {Model, UpdateModel} from "../../IMongoRepository";
 import MongoRepository, {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 import IMongoSpecification from "../../../specification/IMongoSpecification";
@@ -9,40 +9,26 @@ import {plainToClass} from "class-transformer";
 import RepositoryValidationError from "../../../error/RepositoryValidationError";
 
 
-export default class FindOneAndUpdateCommand<M> implements ICommand<M, M | void>{
+export default class FindOneAndUpdateCommand<M extends Model> implements ICommand<M, M | void>{
 
-    constructor(private specification: IMongoSpecification<M>, private model: UpdateModel<M>, private options?: FindOneAndUpdateOption){}
+    constructor(private readonly specification: IMongoSpecification<M>, private readonly model: UpdateModel<M>, private readonly options?: FindOneAndUpdateOption){}
 
-    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
-        return Promise.resolve()
-            .then(async ()=>{
-                if (repositoryOptions.validateUpdate) {
-                    await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date()}, clazz, repositoryOptions)
-                }
-                const query = this.specification && this.specification.specified();
-                if (repositoryOptions.softDelete) {
-                    const or = query['$or'] || [];
-                    return collection
-                        .findOneAndUpdate(
-                            {...query, $or: [{isDeleted: false}, {isDeleted: {$exists: false}}, ...or]},
-                            {
-                                $set: {...this.model, lastUpdatedAt: new Date()},
-                                $inc: {version: 1},
-                            },
-                            {returnOriginal: false, ...this.options}
-                        );
-                }
-                return collection
-                    .findOneAndUpdate(
-                        query,
-                        {
-                            $set: {...this.model, lastUpdatedAt: new Date()},
-                            $inc: {version: 1},
-                        },
-                        {returnOriginal: false, ...this.options}
-                    );
-            })
-            .then(async (result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+    public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+        if (repositoryOptions.validateUpdate) {
+            await this.validateUpdateModel({...this.model, lastUpdatedAt: new Date()}, clazz, repositoryOptions)
+        }
+        const filter = this.specification.specified();
+        const update: UpdateQuery<Model> = {
+            $set: {...this.model, lastUpdatedAt: new Date()},
+            $inc: {version: 1},
+        };
+        return collection
+            .findOneAndUpdate(
+                filter,
+                update,
+                {returnOriginal: false, ...this.options}
+            )
+            .then(async (result: FindAndModifyWriteOpResultObject<M>) => {
                 if (!result.value) {
                     return;
                 }

@@ -9,7 +9,6 @@ import ISpecification from "./specification/ISpecification";
 import MongoDbHelper from "./helper/MongoDbHelper";
 import {ClassType} from "./repository/MongoRepository/MongoRepository"
 import {CreateModel, UpdateModel} from "./repository/IMongoRepository"
-import {FilterQuery} from "./specification/IMongoSpecification";
 
 export {
     ICacheManager,
@@ -24,5 +23,4 @@ export {
     ClassType,
     CreateModel,
     UpdateModel,
-    FilterQuery,
 }

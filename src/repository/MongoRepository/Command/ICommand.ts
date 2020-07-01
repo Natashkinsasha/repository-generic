@@ -1,11 +1,11 @@
-import {Collection} from "mongodb";
-import {Entity} from "../../IMongoRepository";
+import {Collection, ObjectId} from "mongodb";
 import {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
+import {Model} from "../../IMongoRepository";
 
 
-export default interface ICommand<M, T>{
+export default interface ICommand<M extends Model, T>{
 
-    execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<T>
+    execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<T>
 
 }

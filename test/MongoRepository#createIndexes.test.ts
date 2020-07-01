@@ -1,15 +1,10 @@
-import * as chai from "chai";
 import * as mongodb from "mongodb";
 import * as redis from "redis";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import UserRepository from "./user/UserRepository";
-import {createCreateUser} from "./util";
-import User from "./user/User";
 
 
 describe('Test UserRepository#clean', () => {
-
-    const {expect} = chai;
 
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
@@ -30,19 +25,15 @@ describe('Test UserRepository#clean', () => {
         redisClient.end(true);
     });
 
-
     beforeEach(async () => {
         await MongoDbHelper.dropAll(db);
     });
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
+    describe('#{validateAdd: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateAdd: true,
             });
         });

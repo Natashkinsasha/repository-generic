@@ -1,16 +1,17 @@
 import ISpecification from "../specification/ISpecification";
+import { ObjectId } from "mongodb";
 
 
-export default interface IRepository<E, Q, S extends ISpecification<Q>> {
-    add(entity: any): Promise<string>;
+export default interface IRepository<E, I, K, R, Q, S extends ISpecification<Q>> {
+    add(entity: K): Promise<ObjectId>;
 
-    update(id: string, entity: any): Promise<E | void>;
+    get(id: I): Promise<E | void>;
 
-    get(id: string): Promise<E | void>;
-
-    delete(id: string): Promise<boolean>;
+    delete(id: I): Promise<boolean>;
 
     clean(): Promise<number>;
+
+    update(id: I, entity: R): Promise<E | void>;
 
     find(
         specification?: S,

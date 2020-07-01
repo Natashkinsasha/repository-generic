@@ -5,41 +5,39 @@ import {
     FilterQuery,
     FindOneAndUpdateOption,
     FindOneOptions,
-    IndexSpecification, ObjectId, UpdateManyOptions
+    IndexSpecification, ObjectId, OptionalId, UpdateManyOptions
 } from "mongodb";
 import IMongoSpecification from "../specification/IMongoSpecification";
 import {Subtract} from "../util";
 
 
 export interface Model {
-    id: string;
+    _id: ObjectId;
     version: number;
     createdAt: Date;
     lastUpdatedAt: Date;
-    isDeleted: boolean;
 }
 
-export type CreateModel<M> = Subtract<M, Model>;
+export type CreateModel<M> = OptionalId<Subtract<M, Model>>;
 
 export type UpdateModel<M> = Partial<CreateModel<M>>;
 
-export type Entity<M> = CreateModel<M> & { _id?: ObjectId };
 
 
-export default interface IMongoRepository<M> extends IRepository<M, FilterQuery<M>, IMongoSpecification<M>> {
+export default interface IMongoRepository<M extends Model> extends IRepository<M, ObjectId, CreateModel<M>, UpdateModel<M>, FilterQuery<M>, IMongoSpecification<M>> {
     transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T>;
 
     createIndexes(indexSpecs: IndexSpecification[]): Promise<void>;
 
-    add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<string>;
+    add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<ObjectId>;
 
-    get(id: string, options?: FindOneOptions): Promise<M | void>;
+    get(_id: ObjectId, options?: FindOneOptions): Promise<M | void>;
 
     replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M>;
 
-    update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void>;
+    update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void>;
 
-    delete(id: string, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean>;
+    delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean>;
 
     find(
         specification?: IMongoSpecification<M>,

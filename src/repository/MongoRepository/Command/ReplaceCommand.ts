@@ -1,6 +1,6 @@
 import ICommand from "./ICommand";
-import {Collection, FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, ObjectId} from "mongodb";
-import {Entity} from "../../IMongoRepository";
+import {Collection, FilterQuery, FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, ObjectId} from "mongodb";
+import {Model} from "../../IMongoRepository";
 import MongoRepository, {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 import {validate, ValidationError} from "class-validator";
@@ -8,39 +8,29 @@ import {plainToClass} from "class-transformer";
 import RepositoryValidationError from "../../../error/RepositoryValidationError";
 
 
-export default class ReplaceCommand<M extends { id: string }> implements ICommand<M, M | void> {
+export default class ReplaceCommand<M extends Model> implements ICommand<M, M | void> {
 
 
     constructor(private model: M, private options?: FindOneAndUpdateOption) {
     }
 
 
-    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<void | M> {
         return Promise
             .resolve()
             .then(async () => {
                 if (repositoryOptions.validateReplace) {
                     await this.validateReplaceModel(this.model, clazz, repositoryOptions)
                 }
-                if (repositoryOptions.softDelete) {
-                    return collection
-                        .findOneAndReplace(
-                            {
-                                _id: new ObjectId(this.model.id),
-                                $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]
-                            },
-                            this.getReplaceObject(this.model, repositoryOptions),
-                            {returnOriginal: false, ...this.options}
-                        )
-                }
+                const query: FilterQuery<Model> = {_id: this.model._id};
                 return collection
                     .findOneAndReplace(
-                        {_id: new ObjectId(this.model.id)},
-                        this.getReplaceObject(this.model, repositoryOptions),
+                        query,
+                        this.getReplaceObject(this.model),
                         {returnOriginal: false, ...this.options}
                     );
             })
-            .then(async (result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
+            .then(async (result: FindAndModifyWriteOpResultObject<M>) => {
                 if (!result.value) {
                     return;
                 }
@@ -48,19 +38,10 @@ export default class ReplaceCommand<M extends { id: string }> implements IComman
             });
     }
 
-    private getReplaceObject(model: M, repositoryOptions: IRepositoryOptions) {
-        const {id, ...uModel} = model;
+    private getReplaceObject(model: M) {
+        const {_id, ...uModel} = model;
         return {
-            ...uModel, ...Object.entries(repositoryOptions)
-                .reduce((additionalProperty, [key, value]) => {
-                    if (key === "lastUpdatedAt" && value) {
-                        return {...additionalProperty, lastUpdatedAt: new Date()};
-                    }
-                    if (key === "version" && value) {
-                        return {...additionalProperty, version: (model["version"] || 0) + 1};
-                    }
-                    return additionalProperty;
-                }, {}),
+            ...uModel, lastUpdatedAt: new Date(), version: (model["version"] || 0) + 1
         };
     }
 

@@ -18,8 +18,6 @@ export function createCreateUser(user: Partial<User>): CreateModel<User>{
 export function validateUser(user: User, expectUser?: Partial<User>): void{
     expect(user).to.be.a('object');
 
-    expect(user.id).to.be.a('string');
-    expectUser && expectUser.id && expect(user.id).to.equal(expectUser.id);
 
     expect(user.name).to.be.a('string');
     expectUser && expectUser.name && expect(user.name).to.equal(expectUser.name);

@@ -1,20 +1,31 @@
 import "reflect-metadata"
-import {IsBoolean, IsDate, IsInt, IsISO8601, IsNumber, IsOptional, IsString, ValidateNested} from 'class-validator';
-import {Type} from "class-transformer";
-import {Model} from "../../src/repository/IMongoRepository";
+import {
+    IsBoolean,
+    IsDate,
+    IsNumber,
+    IsOptional,
+    IsString,
+    ValidateNested
+} from 'class-validator';
+import {Expose, Type} from "class-transformer";
 import Purchase from "./Purchase";
+import { ObjectId } from "mongodb";
+import {Model} from "../../src/repository/IMongoRepository";
 
 
-export default class User {
+export default class User implements Model{
+    @Expose()
+    public _id: ObjectId;
     @IsString()
-    public id: string;
-    @IsString()
+    @Expose()
     public name: string;
     @IsDate()
     @Type(() => Date)
+    @Expose()
     public createdAt: Date;
     @IsDate()
     @Type(() => Date)
+    @Expose()
     public lastUpdatedAt: Date;
     @IsNumber()
     public version: number;
@@ -22,8 +33,10 @@ export default class User {
     @ValidateNested({
         each: true,
     })
+    @Expose()
     public purchase: Purchase[];
     @IsBoolean()
     @IsOptional()
+    @Expose()
     public isDeleted?: boolean;
 }

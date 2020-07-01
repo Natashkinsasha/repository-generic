@@ -1,27 +1,18 @@
 import ICommand from "./ICommand";
-import {Collection, CollectionInsertOneOptions, ObjectId} from "mongodb";
+import {Collection, CollectionInsertOneOptions, FilterQuery, ObjectId} from "mongodb";
 import MongoRepository, {ClassType} from "../MongoRepository";
-import {Entity} from "../../IMongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
+import {Model} from "../../IMongoRepository";
 
 
-export default class GetCommand<M> implements ICommand<M, M | void>{
+export default class GetCommand<M extends Model> implements ICommand<M, M | void>{
 
-    constructor(private id: string, private  options?: CollectionInsertOneOptions){}
+    constructor(private _id: ObjectId, private  options?: CollectionInsertOneOptions){}
 
-    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
-        if (repositoryOptions.softDelete) {
-            return collection
-                .findOne({_id: new ObjectId(this.id), $or: [{isDeleted: false}, {isDeleted: {$exists: false}}]}, this.options)
-                .then(async (e: M & { _id: ObjectId } | null) => {
-                    if (e) {
-                        return await MongoRepository.pipe(e, clazz, repositoryOptions);
-                    }
-                    return;
-                });
-        }
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<M | void> {
+        const query: FilterQuery<Model> = {_id: this._id};
         return collection
-            .findOne({_id: new ObjectId(this.id)}, this.options)
+            .findOne(query, this.options)
             .then(async (e: M & { _id: ObjectId } | null) => {
                 if (e) {
                     return await MongoRepository.pipe(e, clazz, repositoryOptions);

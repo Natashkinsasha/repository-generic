@@ -2,33 +2,22 @@ import ICommand from "./ICommand";
 import {
     Collection,
     CommonOptions,
-    DeleteWriteOpResultObject,
-    FindAndModifyWriteOpResultObject,
+    DeleteWriteOpResultObject, FilterQuery,
     ObjectId
 } from "mongodb";
-import {Entity} from "../../IMongoRepository";
+import {Model} from "../../IMongoRepository";
 import {ClassType} from "../MongoRepository";
 import IRepositoryOptions from "../../IRepositoryOptions";
 
 
-export default class DeleteCommand<M> implements ICommand<M, boolean>{
+export default class DeleteCommand<M extends Model> implements ICommand<M, boolean>{
 
-    constructor(private id: string, private options?: CommonOptions & { bypassDocumentValidation?: boolean }){}
+    constructor(private _id: ObjectId, private options?: CommonOptions & { bypassDocumentValidation?: boolean }){}
 
-    public execute(collection: Collection<Entity<M>>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<boolean> {
-        if (repositoryOptions.softDelete) {
-            return collection
-                .findOneAndUpdate(
-                    {_id: new ObjectId(this.id)},
-                    {$set: {isDeleted: true}},
-                    {returnOriginal: false, ...this.options}
-                )
-                .then((result: FindAndModifyWriteOpResultObject<Entity<M>>) => {
-                    return !!result.value;
-                })
-        }
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions): Promise<boolean> {
+        const query: FilterQuery<Model> = {_id: this._id};
         return collection
-            .deleteOne({_id: new ObjectId(this.id)}, this.options)
+            .deleteOne(query, this.options)
             .then((result: DeleteWriteOpResultObject) => {
                 return !!result.deletedCount;
             });

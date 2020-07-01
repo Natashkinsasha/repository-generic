@@ -1,12 +1,12 @@
 {
   "name": "repository-generic",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "scripts": {
     "build": "rimraf build && tsc -p tsconfig.build.json",
-    "test": "cross-env NODE_ENV=test nyc mocha test/**/*.ts"
+    "test": "cross-env NODE_ENV=test nyc ts-mocha test/**/*.test.ts"
   },
   "author": "Alex Natashkin <natashkinsasha@gmail.com>",
   "license": "ISC",
@@ -20,14 +20,14 @@
   },
   "bugs": {
     "url": "https://github.com/Natashkinsasha/repository-generic/issues",
-    "email": "natashkinsasga@gmail.com"
+    "email": "natashkinsasha@gmail.com"
   },
   "dependencies": {
-    "@types/mongodb": "^3.1.22",
+    "@types/mongodb": "^3.5.25",
     "@types/redis": "^2.8.12",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.10.0",
-    "mongodb": "^3.3.2",
+    "mongodb": "^3.5.9",
     "redis": "^2.8.0"
   },
   "devDependencies": {
@@ -35,25 +35,19 @@
     "@types/chai": "^4.2.3",
     "@types/chai-as-promised": "^7.1.2",
     "@types/faker": "^4.1.5",
-    "@types/mocha": "^5.2.6",
+    "@types/mocha": "^7.0.2",
     "@types/node": "^11.11.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.2.1",
     "faker": "^4.1.0",
-    "mocha": "^6.2.0",
+    "mocha": "^8.0.1",
     "nyc": "^14.1.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^2.6.3",
+    "ts-mocha": "^7.0.0",
     "ts-node": "^8.0.3",
-    "ts-node-dev": "^1.0.0-pre.42",
     "tsconfig-paths": "^3.8.0",
     "typescript": "^3.3.3333"
-  },
-  "peerDependencies": {
-    "redis": "^2.8.0",
-    "mongodb": "^3.1.13",
-    "@types/mongodb": "^3.1.19",
-    "@types/redis": "^2.8.11"
   }
 }

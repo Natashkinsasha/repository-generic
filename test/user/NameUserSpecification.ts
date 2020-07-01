@@ -1,6 +1,6 @@
 import User from "./User";
-import IMongoSpecification, {FilterQuery} from "../../src/specification/IMongoSpecification"
-import {Entity} from "../../src/repository/IMongoRepository";
+import IMongoSpecification from "../../src/specification/IMongoSpecification"
+import {FilterQuery} from "mongodb";
 
 export default class NameUserSpecification implements IMongoSpecification<User>{
 
@@ -10,7 +10,7 @@ export default class NameUserSpecification implements IMongoSpecification<User>{
         this.name = name;
     }
 
-    specified(): FilterQuery<Entity<User>> {
+    public specified(): FilterQuery<User> {
         return {
             name: this.name,
         };

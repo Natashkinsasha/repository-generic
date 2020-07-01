@@ -37,14 +37,11 @@ describe('Test UserRepository#clean', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateUpdate: true}', () => {
+    describe('#{validateUpdate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateUpdate: true,
             });
         });
@@ -62,45 +59,5 @@ describe('Test UserRepository#clean', () => {
                 })
                 .catch(done);
         });
-    });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validateUpdate: true, softDelete: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                validateUpdate: true,
-                softDelete: true,
-            });
-        });
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            userRepository
-                .add(user)
-                .then(() => {
-                    return userRepository.findOneAndDelete(new NameUserSpecification(user.name));
-                })
-                .then((newUser: User)=>{
-                    validateUser(newUser, {...user});
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            const user = createCreateUser({});
-            userRepository.findOneAndDelete(new NameUserSpecification(user.name))
-                .then((newUser?: User)=>{
-                    expect(newUser).to.be.a('undefined');
-                    done();
-                })
-                .catch(done);
-        });
-
     });
 });

@@ -8,9 +8,10 @@ import {
     IndexSpecification,
     MongoClient,
     UpdateManyOptions,
+    ObjectId,
 } from 'mongodb';
 import IMongoSpecification from '../../specification/IMongoSpecification';
-import IMongoRepository, {CreateModel, Entity, UpdateModel} from "../IMongoRepository";
+import IMongoRepository, {CreateModel, Model, UpdateModel} from "../IMongoRepository";
 import IRepositoryOptions from "../IRepositoryOptions";
 import AddCommand from "./Command/AddCommand";
 import GetCommand from "./Command/GetCommand";
@@ -34,16 +35,12 @@ export declare interface ClassType<T> {
 }
 
 
-export default abstract class MongoRepository<M extends { id: string }> implements IMongoRepository<M> {
+export default abstract class MongoRepository<M extends Model> implements IMongoRepository<M> {
 
     private readonly options: IRepositoryOptions;
 
     protected constructor(private readonly db: Db, private client: MongoClient, options: Partial<IRepositoryOptions> = {}) {
         this.options = {
-            version: false,
-            createdAt: false,
-            lastUpdatedAt: false,
-            softDelete: false,
             validateAdd: false,
             validateGet: false,
             validateReplace: false,
@@ -61,24 +58,24 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         return new CreateIndexCommand(indexSpecs).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<string> {
+    public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<ObjectId> {
         return new AddCommand<M>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public get(id: string, options?: FindOneOptions): Promise<M | void> {
-        return new GetCommand<M>(id, options).execute(this.getCollection(), this.getClass(), this.options);
+    public get(_id: ObjectId, options?: FindOneOptions): Promise<M | void> {
+        return new GetCommand<M>(_id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
         return new ReplaceCommand(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
-        return new UpdateCommand(id, model, options).execute(this.getCollection(), this.getClass(), this.options);
+    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
+        return new UpdateCommand(_id, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public delete(id: string, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
-        return new DeleteCommand(id, options).execute(this.getCollection(), this.getClass(), this.options);
+    public delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
+        return new DeleteCommand(_id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public find(
@@ -122,19 +119,14 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
         return this.constructor.name.toLowerCase().split('repository')[0];
     }
 
-    protected getCollection = (): Collection<Entity<M>> => {
+    protected getCollection<M extends Model>(): Collection<M>{
         return this.db.collection(this.getCollectionName());
     };
 
-    public static async pipe<M>(entity: Entity<M>, clazz: ClassType<M>, options: IRepositoryOptions): Promise<M> {
-        if (!entity._id) {
-            throw new Error('Haven`t _id in object');
-        }
-        const {_id, ...object} = entity;
-        const id = _id.toHexString();
-        const classObject: M = plainToClass(clazz, {id, ...object}, options.classTransformOptions);
+    public static async pipe<M extends Model>(entity: M, clazz: ClassType<M>, options: IRepositoryOptions): Promise<M> {
+        const object: M = plainToClass<M, M>(clazz, entity, options.classTransformOptions);
         if (options.validateGet) {
-            await validate(classObject, options.validatorOptions)
+            await validate(object, options.validatorOptions)
                 .then((errors: ReadonlyArray<ValidationError>) => {
                     if (errors.length) {
                         throw new RepositoryValidationError(errors);
@@ -142,7 +134,7 @@ export default abstract class MongoRepository<M extends { id: string }> implemen
                     return;
                 });
         }
-        return classObject;
+        return object;
     }
 
 }

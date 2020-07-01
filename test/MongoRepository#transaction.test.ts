@@ -6,8 +6,6 @@ import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
-import NameUserSpecification from "./user/NameUserSpecification";
 
 
 describe('Test UserRepository#transaction', () => {
@@ -39,15 +37,11 @@ describe('Test UserRepository#transaction', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{}', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true
-            });
+            userRepository = new UserRepository(db, mongoClient, redisClient);
         })
 
         it.skip('1', (done) => {
@@ -55,7 +49,7 @@ describe('Test UserRepository#transaction', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository
                         .transaction(async (session) => {
                             await userRepository.update(id, {name: newName}, {session});
@@ -74,7 +68,7 @@ describe('Test UserRepository#transaction', () => {
             const user = createCreateUser({});
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository
                         .transaction(async (session) => {
                             await userRepository.get(id, {session})

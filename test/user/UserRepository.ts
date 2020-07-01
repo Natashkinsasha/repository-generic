@@ -7,8 +7,8 @@ import {ClassType} from "../../src";
 import IRepositoryOptions from "../../src/repository/IRepositoryOptions";
 
 export default class UserRepository extends CacheRedisMongoRepository<User> {
-    constructor(db: Db, clinet: MongoClient, redisClient: RedisClient, options: Partial<IRepositoryOptions>) {
-        super(db, clinet, new UserCacheManager(redisClient), options);
+    constructor(db: Db, client: MongoClient, redisClient: RedisClient, options?: Partial<IRepositoryOptions>) {
+        super(db, client, new UserCacheManager(redisClient), options);
     }
 
     protected getClass(): ClassType<User> {

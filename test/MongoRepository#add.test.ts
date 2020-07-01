@@ -7,7 +7,6 @@ import {createCreateUser} from "./util";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import RepositoryValidationError from "../src/error/RepositoryValidationError";
 
-
 describe('Test UserRepository#add', () => {
 
     const {expect} = chai;
@@ -38,14 +37,11 @@ describe('Test UserRepository#add', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
+    describe('#{version: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateAdd: true,
             });
         });
@@ -54,8 +50,8 @@ describe('Test UserRepository#add', () => {
             const user = createCreateUser({});
             userRepository
                 .add(user)
-                .then((id: string) => {
-                    expect(id).to.be.a('string');
+                .then((id) => {
+                    expect(id).to.be.a('object');
                     done();
                 })
                 .catch(done);
@@ -64,32 +60,6 @@ describe('Test UserRepository#add', () => {
         it('2', () => {
             const user: any = {};
             return expect(userRepository.add(user)).to.be.rejectedWith(RepositoryValidationError);
-        });
-
-    });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
-            });
-        })
-
-        it('1', (done) => {
-            const user = createCreateUser({});
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    expect(id).to.be.a('string');
-                    done();
-                })
-                .catch(done);
         });
 
     });

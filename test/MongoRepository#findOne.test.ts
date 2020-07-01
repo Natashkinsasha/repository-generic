@@ -39,15 +39,11 @@ describe('Test UserRepository#findOne', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true}', () => {
+    describe('#{validateGet: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
                 validateGet: true,
             });
         });
@@ -57,7 +53,7 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then(() => {
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User) => {
@@ -72,8 +68,8 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (id: string) => {
-                    await userRepository.delete(id);
+                .then(async (_id) => {
+                    await userRepository.delete(_id);
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User | void) => {
@@ -85,14 +81,11 @@ describe('Test UserRepository#findOne', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{validateGet: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateGet: true,
             });
         });
@@ -102,7 +95,7 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then(() => {
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User) => {
@@ -117,7 +110,7 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (id: string) => {
+                .then(async (id) => {
                     await userRepository.delete(id);
                     return userRepository.findOne(new NameUserSpecification(name));
                 })

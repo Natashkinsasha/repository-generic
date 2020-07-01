@@ -1,29 +1,29 @@
-import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions} from 'mongodb';
-import {UpdateModel} from './IMongoRepository';
+import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions, ObjectId} from 'mongodb';
+import {Model, UpdateModel} from './IMongoRepository';
 import MongoRepository from "./MongoRepository/MongoRepository";
 import IRepositoryOptions from "./IRepositoryOptions";
 import ICacheManager from "../cache_manager/ICacheManager";
 import IMongoSpecification from "../specification/IMongoSpecification";
 
-export default abstract class CacheMongoRepository<M extends { id: string }> extends MongoRepository<M> {
+export default abstract class CacheMongoRepository<M  extends Model> extends MongoRepository<M> {
     protected constructor(db: Db, client: MongoClient, private cacheManage: ICacheManager<M>, options?: Partial<IRepositoryOptions>) {
         super(db, client, options);
     }
 
-    public get(id: string, options?: FindOneOptions): Promise<M | void> {
+    public get(_id: ObjectId, options?: FindOneOptions): Promise<M | void> {
         if (options && options.session) {
-            return super.get(id, options).then(async (model: M | void) => {
+            return super.get(_id, options).then(async (model: M | void) => {
                 if (model) {
                     await this.cacheManage.save(model);
                 }
                 return model;
             });
         }
-        return this.cacheManage.get(id).then((model: M | void) => {
+        return this.cacheManage.get(_id.toHexString()).then((model: M | void) => {
             if (model) {
                 return model;
             }
-            return super.get(id, options).then(async (model: M | void) => {
+            return super.get(_id, options).then(async (model: M | void) => {
                 if (model) {
                     await this.cacheManage.save(model);
                 }
@@ -52,7 +52,7 @@ export default abstract class CacheMongoRepository<M extends { id: string }> ext
 
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | M> {
         return this.cacheManage
-            .delete(model.id)
+            .delete(model._id.toHexString())
             .then(() => {
                 return super.replace(model, options);
             })
@@ -64,11 +64,11 @@ export default abstract class CacheMongoRepository<M extends { id: string }> ext
             });
     }
 
-    public update(id: string, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
+    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<M | void> {
         return this.cacheManage
-            .delete(id)
+            .delete(_id.toHexString())
             .then(() => {
-                return super.update(id, model, options);
+                return super.update(_id, model, options);
             })
             .then(async (model: M | void) => {
                 if (model) {
@@ -78,9 +78,9 @@ export default abstract class CacheMongoRepository<M extends { id: string }> ext
             });
     }
 
-    public delete(id: string, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
-        return this.cacheManage.delete(id).then(() => {
-            return super.delete(id, options);
+    public delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
+        return this.cacheManage.delete(_id.toHexString()).then(() => {
+            return super.delete(_id, options);
         });
     }
 

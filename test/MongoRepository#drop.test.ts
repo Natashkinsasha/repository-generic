@@ -37,14 +37,11 @@ describe('Test UserRepository#clean', () => {
         await MongoDbHelper.dropAll(db);
     });
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, validate: true}', () => {
+    describe('#{validateAdd: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
                 validateAdd: true,
             });
         });

@@ -41,93 +41,26 @@ describe('Test UserRepository#get', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{}', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true
-            });
+            userRepository = new UserRepository(db, mongoClient, redisClient);
         })
 
         it('1', (done) => {
-            const user = createCreateUser({purchase: [new Purchase(new Date())]});
+            const user = createCreateUser({purchase: [{createdAt:new Date()}]});
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository.get(id);
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});
-                    return userRepository.get(newUser.id);
+                    return userRepository.get(newUser._id);
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});
-                    done();
-                })
-                .catch(done);
-        });
-
-    });
-
-
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true, validateGet: true}', () => {
-
-        let userRepository: UserRepository;
-        before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
-                validateGet: true,
-            });
-        });
-
-        it('1', (done) => {
-            const user = createCreateUser({purchase: [new Purchase(new Date())]});
-            userRepository
-                .add(user)
-                .then((id: string) => {
-                    return userRepository.get(id);
-                })
-                .then((newUser: User) => {
-                    validateUser(newUser, {...user, version: 0});
-                    return userRepository.get(newUser.id);
-                })
-                .then((newUser: User) => {
-                    validateUser(newUser, {...user, version: 0});
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('2', (done) => {
-            const name = faker.name.findName();
-            const user = createCreateUser({name});
-            userRepository
-                .add(user)
-                .then(async (id: string) => {
-                    await userRepository.delete(id);
-                    return userRepository.get(id);
-                })
-                .then((newUser: User | void) => {
-                    expect(newUser).to.be.a('undefined');
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('3', (done) => {
-            const user: any = {};
-            userRepository
-                .add(user)
-                .then(async (id: string) => {
-                    return expect(userRepository.get(id)).to.be.rejectedWith(RepositoryValidationError);
-                })
-                .then(() => {
                     done();
                 })
                 .catch(done);

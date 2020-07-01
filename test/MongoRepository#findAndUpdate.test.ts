@@ -8,7 +8,6 @@ import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import NameUserSpecification from "./user/NameUserSpecification";
-import {MongoError} from "mongodb";
 import RepositoryValidationError from "../src/error/RepositoryValidationError";
 
 
@@ -41,15 +40,11 @@ describe('Test UserRepository#findAndUpdate', () => {
     });
 
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true}', () => {
+    describe('#{}', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-            });
+            userRepository = new UserRepository(db, mongoClient, redisClient);
         })
 
         it('1', (done) => {
@@ -68,15 +63,11 @@ describe('Test UserRepository#findAndUpdate', () => {
 
     });
 
-    describe('#{version: true, createdAt: true, lastUpdatedAt: true, softDelete: true, validateUpdate: true}', () => {
+    describe('#{validateUpdate: true}', () => {
 
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
                 validateUpdate: true,
             });
         });
@@ -86,8 +77,8 @@ describe('Test UserRepository#findAndUpdate', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (id: string) => {
-                    await userRepository.delete(id);
+                .then(async (_id) => {
+                    await userRepository.delete(_id);
                     return userRepository.findAndUpdate(new NameUserSpecification(name), {name: faker.name.findName()});
                 })
                 .then((user: User | void) => {

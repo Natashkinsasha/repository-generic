@@ -6,8 +6,6 @@ import {createCreateUser, validateUser} from "./util";
 import User from "./user/User";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
-import NameUserSpecification from "./user/NameUserSpecification";
 
 
 describe('Test UserRepository#update', () => {
@@ -43,11 +41,7 @@ describe('Test UserRepository#update', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true
-            });
+            userRepository = new UserRepository(db, mongoClient, redisClient);
         });
 
         it('1', (done) => {
@@ -55,7 +49,7 @@ describe('Test UserRepository#update', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id: string) => {
+                .then((id) => {
                     return userRepository.update(id, {name: newName});
                 })
                 .then((newUser: User) => {
@@ -73,10 +67,6 @@ describe('Test UserRepository#update', () => {
         let userRepository: UserRepository;
         before(() => {
             userRepository = new UserRepository(db, mongoClient, redisClient, {
-                version: true,
-                createdAt: true,
-                lastUpdatedAt: true,
-                softDelete: true,
                 validateUpdate: true,
             });
         });
@@ -86,7 +76,7 @@ describe('Test UserRepository#update', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then(async (id: string) => {
+                .then(async (id) => {
                     await userRepository.delete(id);
                     return userRepository.update(id, {name: newName});
                 })
