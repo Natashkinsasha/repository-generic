@@ -8,7 +8,7 @@ import {
     IndexSpecification,
     MongoClient,
     UpdateManyOptions,
-    ObjectId,
+    ObjectId, UpdateQuery,
 } from 'mongodb';
 import IMongoSpecification from '../../specification/IMongoSpecification';
 import IMongoRepository, {CreateModel, Model, UpdateModel} from "../IMongoRepository";
@@ -28,6 +28,8 @@ import CreateIndexCommand from "./Command/CreateIndexCommand";
 import {validate, ValidationError} from "class-validator";
 import RepositoryValidationError from "../../error/RepositoryValidationError";
 import FindOneAndDeleteCommand from "./Command/FindOneAndDeleteCommand";
+import UpdateByQueryCommand from "./Command/UpdateByQueryCommand";
+import FindOneAndUpdateByQueryCommand from "./Command/FindOneAndUpdateByQueryCommand";
 
 
 export declare interface ClassType<T> {
@@ -74,6 +76,10 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
         return new UpdateCommand<M,C>(_id, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
+    public updateByQuery(_id: ObjectId, query: UpdateQuery<M>, options?: FindOneAndUpdateOption): Promise<void | C> {
+        return new UpdateByQueryCommand<M,C>(_id, query, options).execute(this.getCollection(), this.getClass(), this.options);
+    }
+
     public delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
         return new DeleteCommand<M,C>(_id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
@@ -94,6 +100,10 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
 
     public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void> {
         return new FindOneAndUpdateCommand<M,C>(specification, model).execute(this.getCollection(), this.getClass(), this.options);
+    }
+
+    public findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateQuery<M>, options?: FindOneAndUpdateOption): Promise<C | void> {
+        return new FindOneAndUpdateByQueryCommand<M,C>(specification, query).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {

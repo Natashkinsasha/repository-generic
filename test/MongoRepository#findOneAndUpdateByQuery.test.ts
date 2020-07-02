@@ -11,7 +11,7 @@ import * as faker from "faker";
 import {plainToClass} from "class-transformer";
 import User from "./user/User";
 
-describe('Test UserRepository#findOneAndUpdate', () => {
+describe('Test UserRepository#findOneAndUpdateByQuery', () => {
     chai.use(chaiAsPromised);
 
     let db: mongodb.Db;
@@ -54,7 +54,7 @@ describe('Test UserRepository#findOneAndUpdate', () => {
             userRepository
                 .add(user)
                 .then(() => {
-                    return userRepository.findOneAndUpdate(new NameUserSpecification(user.name), {name: newName});
+                    return userRepository.findOneAndUpdateByQuery(new NameUserSpecification(user.name), {$set: {name: newName}});
                 })
                 .then((newUser: User)=>{
                     validateUser(newUser, {...user, name: newName, version: 1});

@@ -5,7 +5,7 @@ import {
     FilterQuery,
     FindOneAndUpdateOption,
     FindOneOptions,
-    IndexSpecification, ObjectId, OptionalId, UpdateManyOptions
+    IndexSpecification, ObjectId, OptionalId, UpdateManyOptions, UpdateQuery
 } from "mongodb";
 import IMongoSpecification from "../specification/IMongoSpecification";
 import {Subtract} from "../util";
@@ -37,6 +37,8 @@ export default interface IMongoRepository<M extends Model, C> extends IRepositor
 
     update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void>;
 
+    updateByQuery(_id: ObjectId, query: UpdateQuery<M>, options?: FindOneAndUpdateOption): Promise<C | void>;
+
     delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean>;
 
     find(
@@ -50,6 +52,8 @@ export default interface IMongoRepository<M extends Model, C> extends IRepositor
     findOne(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<C | void>;
 
     findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void>;
+
+    findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateQuery<M>, options?: FindOneAndUpdateOption): Promise<C | void>;
 
     findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void>;
 
