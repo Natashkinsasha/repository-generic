@@ -6,3 +6,7 @@ export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type Diff<T, U> = T extends U ? never : T;
 export type Subtract<T, V> = Pick<T, Exclude<keyof T, keyof V>>;
 export type Object<M> = Subtract<M & {id: string}, {_id: ObjectId}>
+
+export interface ClassType<T> {
+    new(...args: any[]): T;
+}

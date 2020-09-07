@@ -1,11 +1,7 @@
-import {CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions, ObjectId} from 'mongodb';
-import {Model, UpdateModel} from './IMongoRepository';
-import MongoRepository from "./MongoRepository/MongoRepository";
-import IRepositoryOptions from "./IRepositoryOptions";
-import ICacheManager from "../cache_manager/ICacheManager";
-import IMongoSpecification from "../specification/IMongoSpecification";
+import { CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions, ObjectId } from 'mongodb';
+import { ICacheManager, IMongoSpecification, IRepositoryOptions, Model, MongoRepository, UpdateModel } from '../index';
 
-export default abstract class CacheMongoRepository<M  extends Model, C> extends MongoRepository<M, C> {
+export default abstract class CacheMongoRepository<M extends Model, C> extends MongoRepository<M, C> {
     protected constructor(db: Db, client: MongoClient, private cacheManage: ICacheManager<C>, options: IRepositoryOptions<M, C>) {
         super(db, client, options);
     }
@@ -32,22 +28,22 @@ export default abstract class CacheMongoRepository<M  extends Model, C> extends 
         });
     }
 
-    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void>{
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {
         return this.cacheManage.deleteAll()
             .then(() => {
                 return super.findAndUpdate(specification, model, options);
             });
     }
 
-    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<C | void>{
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<C | void> {
         return super.findOneAndUpdate(specification, model, options)
-            .then(async (model: C | void)=>{
-                if(model){
+            .then(async (model: C | void) => {
+                if (model) {
                     await this.cacheManage.save(model);
                     return model;
                 }
                 return;
-            })
+            });
     }
 
     public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | C> {

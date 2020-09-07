@@ -1,8 +1,6 @@
-import {classToPlain, plainToClass} from 'class-transformer';
-import {RedisClient} from 'redis';
-import {ClassType} from '../repository/MongoRepository/MongoRepository';
-import ICacheManager from './ICacheManager';
-import {Model} from "../repository/IMongoRepository";
+import { classToPlain, plainToClass } from 'class-transformer';
+import { RedisClient } from 'redis';
+import { ClassType, ICacheManager } from '..';
 
 export default abstract class RedisCacheManager<T extends {id: string}> implements ICacheManager<T> {
     constructor(private readonly redisClient: RedisClient) {
@@ -59,11 +57,11 @@ export default abstract class RedisCacheManager<T extends {id: string}> implemen
                 return Promise
                     .all(keys.map((key: string) => (this.delete(key))))
                     .then(() => {
-                        return resolve()
+                        return resolve();
                     })
                     .catch(reject);
             });
-        })
+        });
     }
 
     protected abstract getClass(): ClassType<T>;
@@ -71,6 +69,4 @@ export default abstract class RedisCacheManager<T extends {id: string}> implemen
     protected getCollectionName(): string {
         return this.constructor.name.toLowerCase().split('rediscachemanager')[0];
     }
-
-
 }

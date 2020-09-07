@@ -1,4 +1,4 @@
-import IRepository from "./IRepository";
+import IRepository from './IRepository';
 import {
     ClientSession,
     CollectionInsertOneOptions, CommonOptions,
@@ -6,9 +6,9 @@ import {
     FindOneAndUpdateOption,
     FindOneOptions,
     IndexSpecification, ObjectId, OptionalId, UpdateManyOptions, UpdateQuery
-} from "mongodb";
-import IMongoSpecification from "../specification/IMongoSpecification";
-import {Subtract} from "../util";
+} from 'mongodb';
+import { Subtract } from '../util';
+import { IMongoSpecification } from '../index';
 
 
 export interface Model {
@@ -21,7 +21,6 @@ export interface Model {
 export type CreateModel<M> = OptionalId<Subtract<M, Model>>;
 
 export type UpdateModel<M> = Partial<CreateModel<M>>;
-
 
 
 export default interface IMongoRepository<M extends Model, C> extends IRepository<C, ObjectId, CreateModel<M>, UpdateModel<M>, FilterQuery<M>, IMongoSpecification<M>> {

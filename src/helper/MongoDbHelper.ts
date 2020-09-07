@@ -1,8 +1,7 @@
 import { Db } from 'mongodb';
 
 
-export default class MongoDbHelper{
-
+export default class MongoDbHelper {
     public static dropAll(db: Db): Promise<ReadonlyArray<boolean>> {
         return db
             .listCollections({ name: { $regex: /^((?!system).)*$/i } })
@@ -17,5 +16,4 @@ export default class MongoDbHelper{
                 return Promise.all(promises);
             });
     }
-
 }

@@ -1,26 +1,24 @@
-import ICommand from "./ICommand";
+import ICommand from './ICommand';
 import {
     Collection,
     CommonOptions,
     DeleteWriteOpResultObject, FilterQuery,
     ObjectId
-} from "mongodb";
-import {Model} from "../../IMongoRepository";
-import {ClassType} from "../MongoRepository";
-import IRepositoryOptions from "../../IRepositoryOptions";
+} from 'mongodb';
+import { Model } from '../../IMongoRepository';
+import IRepositoryOptions from '../../IRepositoryOptions';
+import { ClassType } from '../../../util';
 
 
-export default class DeleteCommand<M extends Model, C> implements ICommand<M, boolean, C>{
+export default class DeleteCommand<M extends Model, C> implements ICommand<M, boolean, C> {
+    constructor(private _id: ObjectId, private options?: CommonOptions & { bypassDocumentValidation?: boolean }) {}
 
-    constructor(private _id: ObjectId, private options?: CommonOptions & { bypassDocumentValidation?: boolean }){}
-
-    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M,C>): Promise<boolean> {
-        const query: FilterQuery<Model> = {_id: this._id};
+    public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<boolean> {
+        const query: FilterQuery<Model> = { _id: this._id };
         return collection
             .deleteOne(query, this.options)
             .then((result: DeleteWriteOpResultObject) => {
                 return !!result.deletedCount;
             });
     }
-
 }

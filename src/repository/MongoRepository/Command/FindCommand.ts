@@ -1,13 +1,13 @@
-import ICommand from "./ICommand";
-import {Model} from "../../IMongoRepository";
-import {Collection, Cursor, FindOneOptions} from "mongodb";
-import MongoRepository, {ClassType} from "../MongoRepository";
-import IRepositoryOptions from "../../IRepositoryOptions";
-import IMongoSpecification from "../../../specification/IMongoSpecification";
+import ICommand from './ICommand';
+import { Model } from '../../IMongoRepository';
+import { Collection, Cursor, FindOneOptions } from 'mongodb';
+import MongoRepository from '../MongoRepository';
+import IRepositoryOptions from '../../IRepositoryOptions';
+import IMongoSpecification from '../../../specification/IMongoSpecification';
+import { ClassType } from '../../../util';
 
 
 export default class FindCommand<M extends Model, C> implements ICommand<M, ReadonlyArray<C>, C> {
-
     constructor(private specification?: IMongoSpecification<M>,
                 private skip: number = 0,
                 private limit: number = Infinity,
@@ -54,5 +54,4 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
         }
         return cursor;
     }
-
 }

@@ -1,5 +1,5 @@
-import ISpecification from "../specification/ISpecification";
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
+import { ISpecification } from '../index';
 
 
 export default interface IRepository<E, I, K, R, Q, S extends ISpecification<Q>> {

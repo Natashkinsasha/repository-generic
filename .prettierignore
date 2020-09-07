@@ -1,0 +1,15 @@
+.idea/
+.git/
+node_modules/
+build/
+public/
+bitbucket-pipelines.yml
+.gitignore
+.lintstagedrc
+.prettierignore
+.editorconfig
+heroku-deploy.sh
+test/mocha.opts
+.nyc_output
+.ebextensions
+beanstalk_deploy.py

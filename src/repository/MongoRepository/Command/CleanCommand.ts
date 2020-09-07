@@ -1,12 +1,11 @@
-import ICommand from "./ICommand";
-import {Collection, CommonOptions, DeleteWriteOpResultObject} from "mongodb";
-import {Model} from "../../IMongoRepository";
-import {ClassType} from "../MongoRepository";
-import IRepositoryOptions from "../../IRepositoryOptions";
+import ICommand from './ICommand';
+import { Collection, CommonOptions, DeleteWriteOpResultObject } from 'mongodb';
+import { Model } from '../../IMongoRepository';
+import IRepositoryOptions from '../../IRepositoryOptions';
+import { ClassType } from '../../../util';
 
 
 export default class CleanCommand<M extends Model, C> implements ICommand<M, number, C> {
-
     constructor(private options?: CommonOptions) {
     }
 
@@ -18,5 +17,4 @@ export default class CleanCommand<M extends Model, C> implements ICommand<M, num
                 return resultObject.result.n || 0;
             });
     }
-
 }
