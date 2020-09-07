@@ -61,8 +61,8 @@ describe('Test UserRepository#replace', () => {
                     return userRepository.get(id);
                 })
                 .then((user: User) => {
-                    const {id, ...uUser} = user;
-                    return userRepository.replace({_id: new ObjectId(id), ...uUser, name: newName});
+                    const {_id, ...uUser} = user;
+                    return userRepository.replace({_id, ...uUser, name: newName});
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, name: newName, version: 1});
@@ -80,8 +80,8 @@ describe('Test UserRepository#replace', () => {
                     return userRepository.get(id);
                 })
                 .then((user: User) => {
-                    const {id, ...uUser} = user;
-                    return expect(userRepository.replace({_id: new ObjectId(id), ...uUser, name: newName})).to.be.rejectedWith(RepositoryValidationError);
+                    const {_id, ...uUser} = user;
+                    return expect(userRepository.replace({_id, ...uUser, name: newName})).to.be.rejectedWith(RepositoryValidationError);
                 })
                 .then(() => {
                     done();
@@ -98,9 +98,9 @@ describe('Test UserRepository#replace', () => {
                     return userRepository.get(id);
                 })
                 .then(async (user: User) => {
-                    await userRepository.delete(new ObjectId(user.id));
-                    const {id, ...uUser} = user;
-                    return userRepository.replace({_id: new ObjectId(id), ...uUser, name: newName});
+                    await userRepository.delete(user._id);
+                    const {_id, ...uUser} = user;
+                    return userRepository.replace({_id, ...uUser, name: newName});
                 })
                 .then((newUser?: User) => {
                     expect(newUser).to.be.a('undefined');

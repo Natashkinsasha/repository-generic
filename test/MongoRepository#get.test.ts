@@ -56,7 +56,7 @@ describe('Test UserRepository#get', () => {
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});
-                    return userRepository.get(new ObjectId(newUser.id));
+                    return userRepository.get(new ObjectId(newUser._id));
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});

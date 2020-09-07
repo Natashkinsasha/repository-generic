@@ -10,7 +10,7 @@ import { ClassType } from '../../../util';
 
 
 export default class ReplaceCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private model: M, private options?: FindOneAndUpdateOption) {
+    constructor(private model: M, private options?: FindOneAndUpdateOption<M>) {
     }
 
 

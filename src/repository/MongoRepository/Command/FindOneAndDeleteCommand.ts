@@ -14,7 +14,7 @@ import { ClassType } from '../../../util';
 
 
 export default class FindOneAndDeleteCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private specification: IMongoSpecification<M>, private options?: FindOneAndDeleteOption) {}
+    constructor(private specification: IMongoSpecification<M>, private options?: FindOneAndDeleteOption<M>) {}
 
     public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<C | void> {
         const query = this.specification.specified();

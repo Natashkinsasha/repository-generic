@@ -8,7 +8,7 @@ import { ClassType } from '../../../util';
 
 
 export default class FindOneCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private specification: IMongoSpecification<M>, private options?: FindOneOptions) {
+    constructor(private specification: IMongoSpecification<M>, private options?: FindOneOptions<M extends M?M:M>) {
     }
 
     public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<C | void> {

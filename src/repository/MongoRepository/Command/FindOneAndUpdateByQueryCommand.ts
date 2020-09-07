@@ -7,7 +7,7 @@ import IMongoSpecification from '../../../specification/IMongoSpecification';
 import { ClassType } from '../../../util';
 
 export default class FindOneAndUpdateByQueryCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private readonly specification: IMongoSpecification<M>, private readonly query: UpdateQuery<M>, private readonly options?: FindOneAndUpdateOption) {}
+    constructor(private readonly specification: IMongoSpecification<M>, private readonly query: UpdateQuery<M>, private readonly options?: FindOneAndUpdateOption<M>) {}
 
     public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<void | C> {
         const filter = this.specification.specified();

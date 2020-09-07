@@ -14,7 +14,7 @@ import { ClassType } from '../../../util';
 
 
 export default class UpdateByQueryCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private _id: ObjectId, private query: UpdateQuery<M>, private options?: FindOneAndUpdateOption) {
+    constructor(private _id: ObjectId, private query: UpdateQuery<M>, private options?: FindOneAndUpdateOption<M>) {
     }
 
 

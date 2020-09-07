@@ -3,13 +3,12 @@ import {Object} from "../../src/util";
 import UserEntity from "./UserEntity";
 import Purchase from "./Purchase";
 import {IsDate, IsNumber, IsString, ValidateNested} from "class-validator";
+import { ObjectId } from "mongodb";
 
 
-export default class User implements Object<UserEntity>{
+export default class User{
     @Expose()
-    @IsString()
-    @Transform((value, object)=> object.id || object._id.toHexString())
-    public readonly id: string;
+    public readonly _id: ObjectId;
     @IsString()
     @Expose()
     public name: string;

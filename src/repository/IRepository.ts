@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import {FindOneOptions, ObjectId, SortOptionObject} from 'mongodb';
 import { ISpecification } from '../index';
 
 
@@ -12,11 +12,4 @@ export default interface IRepository<E, I, K, R, Q, S extends ISpecification<Q>>
     clean(): Promise<number>;
 
     update(id: I, entity: R): Promise<E | void>;
-
-    find(
-        specification?: S,
-        skip?: number,
-        limit?: number,
-        sort?: Map<string, number>
-    ): Promise<ReadonlyArray<E>>;
 }

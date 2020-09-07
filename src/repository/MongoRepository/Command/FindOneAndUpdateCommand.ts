@@ -11,7 +11,7 @@ import { ClassType } from '../../../util';
 
 
 export default class FindOneAndUpdateCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private readonly specification: IMongoSpecification<M>, private readonly model: UpdateModel<M>, private readonly options?: FindOneAndUpdateOption) {}
+    constructor(private readonly specification: IMongoSpecification<M>, private readonly model: UpdateModel<M>, private readonly options?: FindOneAndUpdateOption<M>) {}
 
     public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<void | C> {
         if (repositoryOptions.validateUpdate) {

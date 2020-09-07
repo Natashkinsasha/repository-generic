@@ -2,9 +2,11 @@ import { classToPlain, plainToClass } from 'class-transformer';
 import { RedisClient } from 'redis';
 import { ClassType, ICacheManager } from '..';
 
-export default abstract class RedisCacheManager<T extends {id: string}> implements ICacheManager<T> {
+export default abstract class RedisCacheManager<T> implements ICacheManager<T> {
     constructor(private readonly redisClient: RedisClient) {
     }
+
+    protected abstract getId(object: T): Promise<string>;
 
     public delete(id: string): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -35,7 +37,7 @@ export default abstract class RedisCacheManager<T extends {id: string}> implemen
     public save(object: T): Promise<T> {
         return new Promise((resolve, reject) => {
             return this.redisClient.set(
-                `${this.getCollectionName()}:${object.id}`,
+                `${this.getCollectionName()}:${this.getId(object)}`,
                 JSON.stringify(classToPlain(object)),
                 (err: Error | null) => {
                     if (err) {

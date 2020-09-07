@@ -1,6 +1,6 @@
 import ICommand from './ICommand';
 import { Model } from '../../IMongoRepository';
-import { Collection, Cursor, FindOneOptions } from 'mongodb';
+import { Collection, Cursor, FindOneOptions, SortOptionObject } from 'mongodb';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import IMongoSpecification from '../../../specification/IMongoSpecification';
@@ -11,8 +11,8 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
     constructor(private specification?: IMongoSpecification<M>,
                 private skip: number = 0,
                 private limit: number = Infinity,
-                private sort: Map<string, number> = new Map(),
-                private options?: FindOneOptions) {
+                private sort?: { keyOrList: string | Array<[string, number]> | SortOptionObject<M>, direction?: number },
+                private options?: FindOneOptions<M extends M?M:M>) {
     }
 
     public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<ReadonlyArray<C>> {
@@ -28,7 +28,7 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
         repositoryOptions: IRepositoryOptions<M, C>,
         collection: Collection<M>,
         specification?: IMongoSpecification<M>,
-        options?: FindOneOptions
+        options?: FindOneOptions<M extends M?M:M>
     ): Cursor<M> {
         const query = specification && specification.specified() || {};
         return collection.find(query, options);
@@ -48,9 +48,9 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
         return cursor;
     }
 
-    private buildSort(cursor: Cursor<M>, sort: Map<string, number>): Cursor<M> {
-        if (sort.size > 0) {
-            return cursor.sort(sort);
+    private buildSort(cursor: Cursor<M>, sort?: { keyOrList: string | Array<[string, number]> | SortOptionObject<M>, direction?: number }): Cursor<M> {
+        if (sort) {
+            return cursor.sort(sort.keyOrList, sort.direction);
         }
         return cursor;
     }

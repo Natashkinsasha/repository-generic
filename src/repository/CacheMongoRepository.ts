@@ -6,7 +6,8 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
         super(db, client, options);
     }
 
-    public get(_id: ObjectId, options?: FindOneOptions): Promise<C | void> {
+
+    public get(_id: ObjectId, options?: FindOneOptions<M>): Promise<C | void> {
         if (options && options.session) {
             return super.get(_id, options).then(async (model: C | void) => {
                 if (model) {
@@ -46,7 +47,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
             });
     }
 
-    public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | C> {
+    public replace(model: M, options?: FindOneAndUpdateOption<M>): Promise<void | C> {
         return this.cacheManage
             .delete(model._id.toHexString())
             .then(() => {
@@ -60,7 +61,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
             });
     }
 
-    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void> {
+    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
         return this.cacheManage
             .delete(_id.toHexString())
             .then(() => {

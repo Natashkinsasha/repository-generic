@@ -6,4 +6,5 @@ export default interface ICacheManager<T> {
     delete(id: string): Promise<void>;
 
     deleteAll(): Promise<void>;
+
 }

@@ -17,7 +17,7 @@ import { ClassType } from '../../../util';
 
 
 export default class UpdateCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private _id: ObjectId, private model: UpdateModel<M>, private options?: FindOneAndUpdateOption) {
+    constructor(private _id: ObjectId, private model: UpdateModel<M>, private options?: FindOneAndUpdateOption<M>) {
     }
 
 

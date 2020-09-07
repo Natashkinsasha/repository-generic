@@ -8,7 +8,7 @@ import {
     IndexSpecification,
     MongoClient,
     UpdateManyOptions,
-    ObjectId, UpdateQuery,
+    ObjectId, UpdateQuery, FindOneAndDeleteOption, SortOptionObject,
 } from 'mongodb';
 import IMongoSpecification from '../../specification/IMongoSpecification';
 import IMongoRepository, { CreateModel, Model, UpdateModel } from '../IMongoRepository';
@@ -59,19 +59,19 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
         return new AddCommand<M, C>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public get(_id: ObjectId, options?: FindOneOptions): Promise<C | void> {
+    public get(_id: ObjectId, options?: FindOneOptions<M>): Promise<C | void> {
         return new GetCommand<M, C>(_id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public replace(model: M, options?: FindOneAndUpdateOption): Promise<void | C> {
+    public replace(model: M, options?: FindOneAndUpdateOption<M>): Promise<void | C> {
         return new ReplaceCommand<M, C>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void> {
+    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
         return new UpdateCommand<M, C>(_id, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public updateByQuery(_id: ObjectId, query: UpdateQuery<M>, options?: FindOneAndUpdateOption): Promise<void | C> {
+    public updateByQuery(_id: ObjectId, query: UpdateQuery<M>, options?: FindOneAndUpdateOption<M>): Promise<void | C> {
         return new UpdateByQueryCommand<M, C>(_id, query, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
@@ -83,21 +83,21 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
         specification?: IMongoSpecification<M>,
         skip: number = 0,
         limit: number = Infinity,
-        sort: Map<string, number> = new Map(),
-        options?: FindOneOptions
+        sort?: { keyOrList: string | Array<[string, number]> | SortOptionObject<M>, direction?: number },
+        options?: FindOneOptions<M extends M?M:M>
     ): Promise<ReadonlyArray<C>> {
         return new FindCommand<M, C>(specification, skip, limit, sort, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOne(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<C | void> {
+    public findOne(specification: IMongoSpecification<M>, options?: FindOneOptions<M extends M?M:M>): Promise<C | void> {
         return new FindOneCommand<M, C>(specification, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption): Promise<C | void> {
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
         return new FindOneAndUpdateCommand<M, C>(specification, model).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateQuery<M>, options?: FindOneAndUpdateOption): Promise<C | void> {
+    public findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateQuery<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
         return new FindOneAndUpdateByQueryCommand<M, C>(specification, query).execute(this.getCollection(), this.getClass(), this.options);
     }
 
@@ -105,7 +105,7 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
         return new FindAndUpdateCommand<M, C>(specification, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOneAndDelete(specification: IMongoSpecification<M>, options?: FindOneOptions): Promise<C | void> {
+    public findOneAndDelete(specification: IMongoSpecification<M>, options?: FindOneAndDeleteOption<M>): Promise<C | void> {
         return new FindOneAndDeleteCommand<M, C>(specification, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 

@@ -62,7 +62,7 @@ describe('Test UserRepository#find', () => {
                 })
                 .then((users: User[]) => {
                     expect(users).to.have.lengthOf(2);
-                    return userRepository.delete(new ObjectId(users[0].id));
+                    return userRepository.delete(new ObjectId(users[0]._id));
                 })
                 .then(() => {
                     return userRepository.find();
@@ -101,8 +101,7 @@ describe('Test UserRepository#find', () => {
                     userRepository.add(createCreateUser({})),
                 ])
                 .then(() => {
-                    const sort = new Map<string, number>().set(name, 1);
-                    return userRepository.find(new NameUserSpecification(name), 1, 1, sort);
+                    return userRepository.find(new NameUserSpecification(name), 1, 1, {keyOrList: {name: 1}});
                 })
                 .then((users: User[]) => {
                     expect(users).to.have.lengthOf(1);
