@@ -1,6 +1,7 @@
 import { classToPlain, plainToClass } from 'class-transformer';
 import { RedisClient } from 'redis';
-import { ClassType, ICacheManager } from '..';
+import ICacheManager from './ICacheManager';
+import { ClassType } from '../util';
 
 export default abstract class RedisCacheManager<T> implements ICacheManager<T> {
     constructor(private readonly redisClient: RedisClient) {

@@ -1,6 +1,6 @@
 import { ClassTransformOptions } from 'class-transformer';
 import { ValidatorOptions } from 'class-validator';
-import { Model } from '../index';
+import { Model } from './IMongoRepository';
 
 
 export default interface IRepositoryOptions<M extends Model, C>{

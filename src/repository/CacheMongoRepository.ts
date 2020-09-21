@@ -1,5 +1,9 @@
 import { CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions, ObjectId } from 'mongodb';
-import { ICacheManager, IMongoSpecification, IRepositoryOptions, Model, MongoRepository, UpdateModel } from '../index';
+import MongoRepository from './MongoRepository/MongoRepository';
+import { Model, UpdateModel } from './IMongoRepository';
+import ICacheManager from '../cache_manager/ICacheManager';
+import IRepositoryOptions from './IRepositoryOptions';
+import IMongoSpecification from '../specification/IMongoSpecification';
 
 export default abstract class CacheMongoRepository<M extends Model, C> extends MongoRepository<M, C> {
     protected constructor(db: Db, client: MongoClient, private cacheManage: ICacheManager<C>, options: IRepositoryOptions<M, C>) {

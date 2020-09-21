@@ -139,6 +139,6 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
                     return;
                 });
         }
-        return options.customTransform(entity);
+        return options.customTransform(object);
     }
 }

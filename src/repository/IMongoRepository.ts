@@ -8,7 +8,7 @@ import {
     IndexSpecification, ObjectId, OptionalId, SortOptionObject, UpdateManyOptions, UpdateQuery
 } from 'mongodb';
 import { Subtract } from '../util';
-import { IMongoSpecification } from '../index';
+import IMongoSpecification from '../specification/IMongoSpecification';
 
 
 export interface Model {
