@@ -13,7 +13,7 @@ export default class GetCommand<M extends Model, C> implements ICommand<M, C | v
         const query: FilterQuery<Model> = { _id: this._id };
         return collection
             .findOne(query, this.options)
-            .then((e: M & { _id: ObjectId } | null) => {
+            .then((e: M | null) => {
                 if (e) {
                     return MongoRepository.pipe(e, clazz, repositoryOptions);
                 }
