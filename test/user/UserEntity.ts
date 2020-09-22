@@ -1,13 +1,11 @@
 import "reflect-metadata"
 import {
-    IsBoolean,
     IsDate,
     IsNumber,
-    IsOptional,
     IsString,
     ValidateNested
 } from 'class-validator';
-import {Expose, Type} from "class-transformer";
+import {Expose, Transform, Type} from "class-transformer";
 import Purchase from "./Purchase";
 import { ObjectId } from "mongodb";
 import {Model} from "../../src/repository/IMongoRepository";
@@ -28,6 +26,7 @@ export default class UserEntity implements Model{
     @Expose()
     public lastUpdatedAt: Date;
     @IsNumber()
+    @Expose()
     public version: number;
     @Type(() => Purchase)
     @ValidateNested({
