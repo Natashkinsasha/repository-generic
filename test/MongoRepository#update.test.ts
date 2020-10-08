@@ -90,6 +90,15 @@ describe('Test UserRepository#update', () => {
                 .catch(done);
         });
 
+        it('2', () => {
+            const user = createCreateUser({});
+            return userRepository
+                .add(user)
+                .then(async (id) => {
+                    expect(userRepository.update(id, {name: null} as any)).rejectedWith();
+                });
+        });
+
 
 
     });

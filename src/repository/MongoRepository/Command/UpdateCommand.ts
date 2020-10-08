@@ -45,7 +45,7 @@ export default class UpdateCommand<M extends Model, C> implements ICommand<M, C 
     }
 
     private validateUpdateModel(model: UpdateModel<M>, clazz: ClassType<M>): Promise<void> {
-        return validate(plainToClass(clazz, model), { skipMissingProperties: true }).then(
+        return validate(plainToClass(clazz, model), { skipUndefinedProperties: true }).then(
             (errors: ReadonlyArray<ValidationError>) => {
                 if (errors.length) {
                     throw new RepositoryValidationError(errors);
