@@ -51,8 +51,8 @@ describe('Test UserRepository#get', () => {
             const user = createCreateUser({purchase: [{createdAt:new Date()}]});
             userRepository
                 .add(user)
-                .then((id) => {
-                    return userRepository.get(id);
+                .then((entity) => {
+                    return userRepository.get(entity._id);
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});

@@ -37,7 +37,7 @@ export default interface IMongoRepository<M extends Model, C> extends IRepositor
 
     createIndexes(indexSpecs: IndexSpecification[]): Promise<void>;
 
-    add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<ObjectId>;
+    add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<C>;
 
     get(_id: ObjectId, options?: FindOneOptions<M>): Promise<C | void>;
 

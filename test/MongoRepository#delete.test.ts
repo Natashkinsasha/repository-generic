@@ -50,15 +50,15 @@ describe('Test UserRepository#delete', () => {
             const user = createCreateUser({});
             userRepository
                 .add(user)
-                .then((_id) => {
-                    return userRepository.get(_id);
+                .then((entity) => {
+                    return userRepository.get(entity._id);
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, version: 0});
-                    return userRepository.delete(new ObjectId(newUser.id))
+                    return userRepository.delete(new ObjectId(newUser._id))
                         .then(() => {
                             // validateUser(deletedUser, { ...user, version: 0 });
-                            return userRepository.get(new ObjectId(newUser.id));
+                            return userRepository.get(new ObjectId(newUser._id));
                         });
                 })
                 .then((user: User | void) => {

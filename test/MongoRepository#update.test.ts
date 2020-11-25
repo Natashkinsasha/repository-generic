@@ -51,8 +51,8 @@ describe('Test UserRepository#update', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id) => {
-                    return userRepository.update(id, {name: newName});
+                .then((entity) => {
+                    return userRepository.update(entity._id, {name: newName});
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, name: newName, version: 1});
@@ -79,9 +79,9 @@ describe('Test UserRepository#update', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then(async (id) => {
-                    await userRepository.delete(id);
-                    return userRepository.update(id, {name: newName});
+                .then(async (entity) => {
+                    await userRepository.delete(entity._id);
+                    return userRepository.update(entity._id, {name: newName});
                 })
                 .then((newUser: User) => {
                     expect(newUser).to.be.a('undefined');
@@ -94,8 +94,8 @@ describe('Test UserRepository#update', () => {
             const user = createCreateUser({});
             return userRepository
                 .add(user)
-                .then(async (id) => {
-                    expect(userRepository.update(id, {name: null} as any)).rejectedWith();
+                .then(async (entity) => {
+                    expect(userRepository.update(entity._id, {name: null} as any)).rejectedWith();
                 });
         });
 

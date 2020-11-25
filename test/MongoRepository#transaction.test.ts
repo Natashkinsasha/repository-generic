@@ -51,11 +51,11 @@ describe('Test UserRepository#transaction', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id) => {
+                .then((entity) => {
                     return userRepository
                         .transaction(async (session) => {
-                            await userRepository.update(id, {name: newName}, {session});
-                            return userRepository.get(id, {session});
+                            await userRepository.update(entity._id, {name: newName}, {session});
+                            return userRepository.get(entity._id, {session});
                         });
                 })
                 .then((newUser: User) => {
@@ -70,12 +70,12 @@ describe('Test UserRepository#transaction', () => {
             const user = createCreateUser({});
             userRepository
                 .add(user)
-                .then((id) => {
+                .then((entity) => {
                     return userRepository
                         .transaction(async (session) => {
-                            await userRepository.get(id, {session})
-                            await userRepository.update(id, {name: faker.name.findName()});
-                            await userRepository.update(id, {name: faker.name.findName()}, {session})
+                            await userRepository.get(entity._id, {session})
+                            await userRepository.update(entity._id, {name: faker.name.findName()});
+                            await userRepository.update(entity._id, {name: faker.name.findName()}, {session})
                         });
                 })
                 .catch(() => {

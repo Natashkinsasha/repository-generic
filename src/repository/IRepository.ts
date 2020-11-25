@@ -4,7 +4,7 @@ import { IMongoSpecification, ISpecification } from '../index';
 
 export default interface IRepository<E, I, K, R, Q, S extends ISpecification<Q>> {
 
-    add(entity: K): Promise<ObjectId>;
+    add(entity: K): Promise<E>;
 
     get(id: I): Promise<E | void>;
 

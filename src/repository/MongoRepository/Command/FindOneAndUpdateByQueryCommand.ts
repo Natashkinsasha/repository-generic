@@ -11,9 +11,10 @@ export default class FindOneAndUpdateByQueryCommand<M extends Model, C> implemen
 
     public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<void | C> {
         const filter = this.specification.specified();
-        const { $inc, ...query } = this.query;
+        const { $inc, $set, ...query } = this.query;
         const update: UpdateQuery<Model> = {
             ...query,
+            $set: $set ? { ...$set, lastUpdatedAt: new Date() } : { lastUpdatedAt: new Date() },
             $inc: $inc ? { version: 1, ...$inc } : { version: 1 },
         };
         return collection

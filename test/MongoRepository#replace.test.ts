@@ -57,8 +57,8 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id) => {
-                    return userRepository.get(id);
+                .then((entity) => {
+                    return userRepository.get(entity._id);
                 })
                 .then((user: User) => {
                     const {_id, ...uUser} = user;
@@ -76,8 +76,8 @@ describe('Test UserRepository#replace', () => {
             const newName: any = 1;
             userRepository
                 .add(user)
-                .then((id) => {
-                    return userRepository.get(id);
+                .then((entity) => {
+                    return userRepository.get(entity._id);
                 })
                 .then((user: User) => {
                     const {_id, ...uUser} = user;
@@ -94,8 +94,8 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((id) => {
-                    return userRepository.get(id);
+                .then((entity) => {
+                    return userRepository.get(entity._id);
                 })
                 .then(async (user: User) => {
                     await userRepository.delete(user._id);

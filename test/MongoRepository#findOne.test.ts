@@ -71,8 +71,8 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (_id) => {
-                    await userRepository.delete(_id);
+                .then(async (entity) => {
+                    await userRepository.delete(entity._id);
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User | void) => {
@@ -114,8 +114,8 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (id) => {
-                    await userRepository.delete(id);
+                .then(async (entity) => {
+                    await userRepository.delete(entity._id);
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User | void) => {

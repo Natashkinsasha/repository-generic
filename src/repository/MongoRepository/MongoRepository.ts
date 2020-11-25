@@ -55,7 +55,7 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
         return new CreateIndexCommand<M, C>(indexSpecs).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<ObjectId> {
+    public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<C> {
         return new AddCommand<M, C>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
@@ -94,11 +94,11 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
     }
 
     public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
-        return new FindOneAndUpdateCommand<M, C>(specification, model).execute(this.getCollection(), this.getClass(), this.options);
+        return new FindOneAndUpdateCommand<M, C>(specification, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateQuery<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
-        return new FindOneAndUpdateByQueryCommand<M, C>(specification, query).execute(this.getCollection(), this.getClass(), this.options);
+        return new FindOneAndUpdateByQueryCommand<M, C>(specification, query, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {

@@ -61,7 +61,7 @@ describe('Test UserRepository#add', () => {
                 .catch(done);
         });
 
-        it('2', () => {
+        it('2', async () => {
             const user: any = {};
             return expect(userRepository.add(user)).to.be.rejectedWith(RepositoryValidationError);
         });

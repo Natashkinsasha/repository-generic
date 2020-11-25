@@ -80,8 +80,8 @@ describe('Test UserRepository#findAndUpdate', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (_id) => {
-                    await userRepository.delete(_id);
+                .then(async (entity) => {
+                    await userRepository.delete(entity._id);
                     return userRepository.findAndUpdate(new NameUserSpecification(name), {name: faker.name.findName()});
                 })
                 .then((user: UserEntity | void) => {
