@@ -1,4 +1,4 @@
-import { CommonOptions, Db, FindOneAndUpdateOption, FindOneOptions, MongoClient, UpdateManyOptions, ObjectId } from 'mongodb';
+import { Db, DeleteOptions, FindOneAndReplaceOptions, FindOneAndUpdateOptions, FindOptions, MongoClient, ObjectId, UpdateOptions } from 'mongodb';
 import MongoRepository from './MongoRepository/MongoRepository';
 import { Model, UpdateModel } from './IMongoRepository';
 import ICacheManager from '../cache_manager/ICacheManager';
@@ -11,7 +11,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
     }
 
 
-    public get(_id: ObjectId, options?: FindOneOptions<M>): Promise<C | void> {
+    public get(_id: ObjectId, options?: FindOptions<M>): Promise<C | void> {
         if (options && options.session) {
             return super.get(_id, options).then(async (model: C | void) => {
                 if (model) {
@@ -33,14 +33,14 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
         });
     }
 
-    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateOptions): Promise<void> {
         return this.cacheManage.deleteAll()
             .then(() => {
                 return super.findAndUpdate(specification, model, options);
             });
     }
 
-    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<C | void> {
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOptions): Promise<C | void> {
         return super.findOneAndUpdate(specification, model, options)
             .then(async (model: C | void) => {
                 if (model) {
@@ -51,7 +51,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
             });
     }
 
-    public replace(model: M, options?: FindOneAndUpdateOption<M>): Promise<void | C> {
+    public replace(model: M, options?: FindOneAndReplaceOptions): Promise<void | C> {
         return this.cacheManage
             .delete(model._id.toHexString())
             .then(() => {
@@ -65,7 +65,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
             });
     }
 
-    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
+    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOptions): Promise<C | void> {
         return this.cacheManage
             .delete(_id.toHexString())
             .then(() => {
@@ -79,7 +79,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
             });
     }
 
-    public delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
+    public delete(_id: ObjectId, options?: DeleteOptions): Promise<boolean> {
         return this.cacheManage.delete(_id.toHexString()).then(() => {
             return super.delete(_id, options);
         });
@@ -92,7 +92,7 @@ export default abstract class CacheMongoRepository<M extends Model, C> extends M
             });
     }
 
-    public clean(options?: CommonOptions): Promise<number> {
+    public clean(options?: DeleteOptions): Promise<number> {
         return this.cacheManage.deleteAll()
             .then(() => {
                 return super.clean(options);

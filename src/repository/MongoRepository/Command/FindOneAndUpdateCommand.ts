@@ -1,5 +1,5 @@
 import ICommand from './ICommand';
-import { Collection, FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, UpdateQuery } from 'mongodb';
+import { Collection, FindOneAndUpdateOptions, ModifyResult, UpdateFilter } from 'mongodb';
 import { Model, UpdateModel } from '../../IMongoRepository';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
@@ -11,14 +11,14 @@ import { ClassType } from '../../../util';
 
 
 export default class FindOneAndUpdateCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private readonly specification: IMongoSpecification<M>, private readonly model: UpdateModel<M>, private readonly options?: FindOneAndUpdateOption<M>) {}
+    constructor(private readonly specification: IMongoSpecification<M>, private readonly model: UpdateModel<M>, private readonly options?: FindOneAndUpdateOptions) {}
 
     public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<void | C> {
         if (repositoryOptions.validateUpdate) {
             await this.validateUpdateModel({ ...this.model, lastUpdatedAt: new Date() }, clazz, repositoryOptions);
         }
         const filter = this.specification.specified();
-        const update: UpdateQuery<Model> = {
+        const update: UpdateFilter<Model> = {
             $set: { ...this.model, lastUpdatedAt: new Date() },
             $inc: { version: 1 },
         };
@@ -26,9 +26,9 @@ export default class FindOneAndUpdateCommand<M extends Model, C> implements ICom
             .findOneAndUpdate(
                 filter,
                 update,
-                { returnOriginal: false, ...this.options }
+                { returnDocument: 'after', ...this.options }
             )
-            .then((result: FindAndModifyWriteOpResultObject<M>) => {
+            .then((result: ModifyResult<M>) => {
                 if (!result.value) {
                     return;
                 }

@@ -1,28 +1,31 @@
 import * as mongodb from "mongodb";
-import * as redis from "redis";
+import * as redis from 'redis-mock';
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
 import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import Purchase from "./user/Purchase";
 import NameUserSpecification from "./user/NameUserSpecification";
 import {plainToClass} from "class-transformer";
 import User from "./user/User";
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 
 describe('Test UserRepository#findOne', () => {
 
     const {expect} = chai;
 
+    let mongoMemoryServer: MongoMemoryServer;
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
     let redisClient: redis.RedisClient;
 
 
     before(async () => {
-        mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const mongodbUri = mongoMemoryServer.getUri();
+        mongoClient = await mongodb.MongoClient.connect(mongodbUri)
             .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
@@ -32,6 +35,7 @@ describe('Test UserRepository#findOne', () => {
 
     after(async () => {
         await mongoClient.close();
+        await mongoMemoryServer.stop();
         redisClient.end(true);
     });
 
@@ -71,8 +75,8 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (entity) => {
-                    await userRepository.delete(entity._id);
+                .then(async (_id) => {
+                    await userRepository.delete(_id);
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User | void) => {
@@ -114,8 +118,8 @@ describe('Test UserRepository#findOne', () => {
             const user = createCreateUser({name});
             userRepository
                 .add(user)
-                .then(async (entity) => {
-                    await userRepository.delete(entity._id);
+                .then(async (_id) => {
+                    await userRepository.delete(_id);
                     return userRepository.findOne(new NameUserSpecification(name));
                 })
                 .then((newUser: User | void) => {

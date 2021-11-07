@@ -1,6 +1,6 @@
 import ICommand from './ICommand';
 import { Model } from '../../IMongoRepository';
-import { Collection, Cursor, FindOneOptions, SortOptionObject } from 'mongodb';
+import { Collection, FindCursor, FindOptions, Sort, SortDirection } from 'mongodb';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import IMongoSpecification from '../../../specification/IMongoSpecification';
@@ -11,8 +11,8 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
     constructor(private specification?: IMongoSpecification<M>,
                 private skip: number = 0,
                 private limit: number = Infinity,
-                private sort?: { keyOrList: string | Array<[string, number]> | SortOptionObject<M>, direction?: number },
-                private options?: FindOneOptions<M extends M?M:M>) {
+                private sort?: { sort: Sort | string, direction?: SortDirection },
+                private options?: FindOptions) {
     }
 
     public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<ReadonlyArray<C>> {
@@ -28,29 +28,30 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
         repositoryOptions: IRepositoryOptions<M, C>,
         collection: Collection<M>,
         specification?: IMongoSpecification<M>,
-        options?: FindOneOptions<M extends M?M:M>
-    ): Cursor<M> {
+        options?: FindOptions
+    ): FindCursor<M> {
+        // eslint-disable-next-line no-mixed-operators
         const query = specification && specification.specified() || {};
         return collection.find(query, options);
     }
 
-    private buildSkip(cursor: Cursor<M>, skip: number): Cursor<M> {
+    private buildSkip(cursor: FindCursor<M>, skip: number): FindCursor<M> {
         if (skip > 0) {
             return cursor.skip(skip);
         }
         return cursor;
     }
 
-    private buildLimit(cursor: Cursor<M>, limit: number): Cursor<M> {
+    private buildLimit(cursor: FindCursor<M>, limit: number): FindCursor<M> {
         if (limit !== Infinity) {
             return cursor.limit(limit);
         }
         return cursor;
     }
 
-    private buildSort(cursor: Cursor<M>, sort?: { keyOrList: string | Array<[string, number]> | SortOptionObject<M>, direction?: number }): Cursor<M> {
+    private buildSort(cursor: FindCursor<M>, sort?: { sort: Sort | string, direction?: SortDirection }): FindCursor<M> {
         if (sort) {
-            return cursor.sort(sort.keyOrList, sort.direction);
+            return cursor.sort(sort.sort, sort.direction);
         }
         return cursor;
     }

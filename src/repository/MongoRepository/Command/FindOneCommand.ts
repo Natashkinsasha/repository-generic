@@ -1,5 +1,5 @@
 import ICommand from './ICommand';
-import { Collection, FindOneOptions, ObjectId } from 'mongodb';
+import { Collection, FindOptions } from 'mongodb';
 import { Model } from '../../IMongoRepository';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
@@ -8,7 +8,7 @@ import { ClassType } from '../../../util';
 
 
 export default class FindOneCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private specification: IMongoSpecification<M>, private options?: FindOneOptions<M extends M?M:M>) {
+    constructor(private specification: IMongoSpecification<M>, private options?: FindOptions) {
     }
 
     public execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<C | void> {

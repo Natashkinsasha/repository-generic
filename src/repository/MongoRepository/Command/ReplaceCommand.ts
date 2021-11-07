@@ -1,5 +1,5 @@
 import ICommand from './ICommand';
-import { Collection, FilterQuery, FindAndModifyWriteOpResultObject, FindOneAndUpdateOption, ObjectId } from 'mongodb';
+import { Collection, Filter, FindOneAndReplaceOptions, ModifyResult } from 'mongodb';
 import { Model } from '../../IMongoRepository';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
@@ -10,7 +10,7 @@ import { ClassType } from '../../../util';
 
 
 export default class ReplaceCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private model: M, private options?: FindOneAndUpdateOption<M>) {
+    constructor(private model: M, private options?: FindOneAndReplaceOptions) {
     }
 
 
@@ -18,14 +18,14 @@ export default class ReplaceCommand<M extends Model, C> implements ICommand<M, C
         if (repositoryOptions.validateReplace) {
             await this.validateReplaceModel(this.model, clazz, repositoryOptions);
         }
-        const query: FilterQuery<Model> = { _id: this.model._id };
+        const query: Filter<Model> = { _id: this.model._id };
         return collection
             .findOneAndReplace(
                 query,
                 this.getReplaceObject(this.model),
-                { returnOriginal: false, ...this.options }
+                { returnDocument: 'after', ...this.options }
             )
-            .then((result: FindAndModifyWriteOpResultObject<M>) => {
+            .then((result: ModifyResult<M>) => {
                 if (!result.value) {
                     return;
                 }
@@ -34,6 +34,7 @@ export default class ReplaceCommand<M extends Model, C> implements ICommand<M, C
     }
 
     private getReplaceObject(model: M) {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { _id, ...uModel } = model;
         return {
             ...uModel, lastUpdatedAt: new Date(), version: (model.version || 0) + 1

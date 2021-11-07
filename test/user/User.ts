@@ -1,13 +1,12 @@
-import {Expose, Transform, Type} from "class-transformer";
-import {Object} from "../../src/util";
-import UserEntity from "./UserEntity";
+import {Expose, Type} from "class-transformer";
 import Purchase from "./Purchase";
 import {IsDate, IsNumber, IsString, ValidateNested} from "class-validator";
 import { ObjectId } from "mongodb";
+import { ExposeId } from '../../src/util';
 
 
 export default class User{
-    @Expose()
+    @ExposeId()
     public readonly _id: ObjectId;
     @IsString()
     @Expose()

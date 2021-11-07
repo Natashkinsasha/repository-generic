@@ -1,14 +1,16 @@
 import { plainToClass } from 'class-transformer';
 import {
     ClientSession,
-    Collection, CollectionInsertOneOptions, CommonOptions,
-    Db,
-    FindOneAndUpdateOption,
-    FindOneOptions,
-    IndexSpecification,
+    Collection,
+    Db, DeleteOptions,
+    FindOneAndDeleteOptions,
+    FindOneAndReplaceOptions,
+    FindOneAndUpdateOptions,
+    FindOptions,
+    IndexDescription,
+    InsertOneOptions,
     MongoClient,
-    UpdateManyOptions,
-    ObjectId, UpdateQuery, FindOneAndDeleteOption, SortOptionObject,
+    ObjectId, Sort, SortDirection, UpdateFilter, UpdateOptions,
 } from 'mongodb';
 import IMongoSpecification from '../../specification/IMongoSpecification';
 import IMongoRepository, { CreateModel, Model, UpdateModel } from '../IMongoRepository';
@@ -51,66 +53,68 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
         return new TransactionCommand<M, T, C>(this.client, cb).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public createIndexes(indexSpecs: IndexSpecification[]): Promise<void> {
+    public createIndexes(indexSpecs: IndexDescription[]): Promise<void> {
         return new CreateIndexCommand<M, C>(indexSpecs).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public add(model: CreateModel<M>, options?: CollectionInsertOneOptions): Promise<C> {
+    public add(model: CreateModel<M>, options?: InsertOneOptions): Promise<ObjectId> {
         return new AddCommand<M, C>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public get(_id: ObjectId, options?: FindOneOptions<M>): Promise<C | void> {
+    public get(_id: ObjectId, options?: FindOptions<M>): Promise<C | void> {
         return new GetCommand<M, C>(_id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public replace(model: M, options?: FindOneAndUpdateOption<M>): Promise<void | C> {
+    public replace(model: M, options?: FindOneAndReplaceOptions): Promise<void | C> {
         return new ReplaceCommand<M, C>(model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
+    public update(_id: ObjectId, model: UpdateModel<M>, options?: FindOneAndUpdateOptions): Promise<C | void> {
         return new UpdateCommand<M, C>(_id, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public updateByQuery(_id: ObjectId, query: UpdateQuery<M>, options?: FindOneAndUpdateOption<M>): Promise<void | C> {
+    public updateByQuery(_id: ObjectId, query: UpdateFilter<M>, options?: FindOneAndUpdateOptions): Promise<void | C> {
         return new UpdateByQueryCommand<M, C>(_id, query, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public delete(_id: ObjectId, options?: CommonOptions & { bypassDocumentValidation?: boolean }): Promise<boolean> {
+    public delete(_id: ObjectId, options?: DeleteOptions): Promise<boolean> {
         return new DeleteCommand<M, C>(_id, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
     public find(
         specification?: IMongoSpecification<M>,
+        // eslint-disable-next-line default-param-last
         skip: number = 0,
+        // eslint-disable-next-line default-param-last
         limit: number = Infinity,
-        sort?: { keyOrList: string | Array<[string, number]> | SortOptionObject<M>, direction?: number },
-        options?: FindOneOptions<M extends M?M:M>
+        sort?: { sort: Sort | string, direction?: SortDirection },
+        options?: FindOptions
     ): Promise<ReadonlyArray<C>> {
         return new FindCommand<M, C>(specification, skip, limit, sort, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOne(specification: IMongoSpecification<M>, options?: FindOneOptions<M extends M?M:M>): Promise<C | void> {
+    public findOne(specification: IMongoSpecification<M>, options?: FindOptions): Promise<C | void> {
         return new FindOneCommand<M, C>(specification, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
+    public findOneAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: FindOneAndUpdateOptions): Promise<C | void> {
         return new FindOneAndUpdateCommand<M, C>(specification, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateQuery<M>, options?: FindOneAndUpdateOption<M>): Promise<C | void> {
+    public findOneAndUpdateByQuery(specification: IMongoSpecification<M>, query: UpdateFilter<M>, options?: FindOneAndUpdateOptions): Promise<C | void> {
         return new FindOneAndUpdateByQueryCommand<M, C>(specification, query, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateManyOptions): Promise<void> {
+    public findAndUpdate(specification: IMongoSpecification<M>, model: UpdateModel<M>, options?: UpdateOptions): Promise<void> {
         return new FindAndUpdateCommand<M, C>(specification, model, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
-    public findOneAndDelete(specification: IMongoSpecification<M>, options?: FindOneAndDeleteOption<M>): Promise<C | void> {
+    public findOneAndDelete(specification: IMongoSpecification<M>, options?: FindOneAndDeleteOptions): Promise<C | void> {
         return new FindOneAndDeleteCommand<M, C>(specification, options).execute(this.getCollection(), this.getClass(), this.options);
     }
 
 
-    public clean(options?: CommonOptions): Promise<number> {
+    public clean(options?: DeleteOptions): Promise<number> {
         return new CleanCommand(options).execute(this.getCollection(), this.getClass(), this.options);
     }
 

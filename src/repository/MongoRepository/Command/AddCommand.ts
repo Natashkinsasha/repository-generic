@@ -1,31 +1,26 @@
 import ICommand from './ICommand';
 import { CreateModel, Model } from '../../IMongoRepository';
-import { Collection, CollectionInsertOneOptions, OptionalId, ObjectId } from 'mongodb';
+import { Collection, InsertOneOptions, OptionalId, ObjectId } from 'mongodb';
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import RepositoryValidationError from '../../../error/RepositoryValidationError';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import { ClassType } from '../../../util';
-import MongoRepository from "../MongoRepository";
 
 
-export default class AddCommand<M extends Model, C> implements ICommand<M, C, C> {
-    constructor(private readonly model: CreateModel<M>, private readonly options?: CollectionInsertOneOptions) {
+export default class AddCommand<M extends Model, C> implements ICommand<M, ObjectId, C> {
+    constructor(private readonly model: CreateModel<M>, private readonly options?: InsertOneOptions) {
 
     }
 
-    public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<C> {
+    public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<ObjectId> {
         const model: any = { ...this.model, ...AddCommand.createAdditionalProperty() };
         if (repositoryOptions.validateAdd) {
             await this.validateCreateModel(model, clazz, repositoryOptions);
         }
-        return collection.insertOne(model, this.options)
+        return collection.insertOne(model, this.options ?? {})
             .then((result) => {
-                const entity = result.ops[0] as M;
-                if(!entity){
-                    throw new Error('Mongo insert error');
-                }
-                return MongoRepository.pipe(entity, clazz, repositoryOptions);
+                return result.insertedId as ObjectId;
             });
     }
 

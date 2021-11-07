@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import * as redis from "redis";
+import * as redis from 'redis-mock';
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
@@ -8,19 +8,23 @@ import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import {plainToClass} from "class-transformer";
 import User from "./user/User";
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 
 describe('Test UserRepository#update', () => {
 
     const {expect} = chai;
 
+    let mongoMemoryServer: MongoMemoryServer;
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
     let redisClient: redis.RedisClient;
 
 
     before(async () => {
-        mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const mongodbUri = mongoMemoryServer.getUri();
+        mongoClient = await mongodb.MongoClient.connect(mongodbUri)
             .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
@@ -30,6 +34,7 @@ describe('Test UserRepository#update', () => {
 
     after(async () => {
         await mongoClient.close();
+        await mongoMemoryServer.stop();
         redisClient.end(true);
     });
 
@@ -51,8 +56,8 @@ describe('Test UserRepository#update', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((entity) => {
-                    return userRepository.update(entity._id, {name: newName});
+                .then((_id) => {
+                    return userRepository.update(_id, {name: newName});
                 })
                 .then((newUser: User) => {
                     validateUser(newUser, {...user, name: newName, version: 1});
@@ -79,9 +84,9 @@ describe('Test UserRepository#update', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then(async (entity) => {
-                    await userRepository.delete(entity._id);
-                    return userRepository.update(entity._id, {name: newName});
+                .then(async (_id) => {
+                    await userRepository.delete(_id);
+                    return userRepository.update(_id, {name: newName});
                 })
                 .then((newUser: User) => {
                     expect(newUser).to.be.a('undefined');
@@ -94,8 +99,8 @@ describe('Test UserRepository#update', () => {
             const user = createCreateUser({});
             return userRepository
                 .add(user)
-                .then(async (entity) => {
-                    expect(userRepository.update(entity._id, {name: null} as any)).rejectedWith();
+                .then(async (_id) => {
+                    expect(userRepository.update(_id, {name: null} as any)).rejectedWith();
                 });
         });
 

@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import * as redis from "redis";
+import * as redis from 'redis-mock';
 import * as chai from "chai";
 import UserRepository from "./user/UserRepository";
 import {createCreateUser, validateUser} from "./util";
@@ -10,19 +10,23 @@ import NameUserSpecification from "./user/NameUserSpecification";
 import {plainToClass} from "class-transformer";
 import User from "./user/User";
 import { ObjectId } from "mongodb";
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 
 describe('Test UserRepository#find', () => {
 
     const {expect} = chai;
 
+    let mongoMemoryServer: MongoMemoryServer;
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
     let redisClient: redis.RedisClient;
 
 
     before(async () => {
-        mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const mongodbUri = mongoMemoryServer.getUri();
+        mongoClient = await mongodb.MongoClient.connect(mongodbUri)
             .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
@@ -32,6 +36,7 @@ describe('Test UserRepository#find', () => {
 
     after(async () => {
         await mongoClient.close();
+        await mongoMemoryServer.stop();
         redisClient.end(true);
     });
 
@@ -101,7 +106,7 @@ describe('Test UserRepository#find', () => {
                     userRepository.add(createCreateUser({})),
                 ])
                 .then(() => {
-                    return userRepository.find(new NameUserSpecification(name), 1, 1, {keyOrList: {name: 1}});
+                    return userRepository.find(new NameUserSpecification(name), 1, 1, {sort: {name: 1}});
                 })
                 .then((users: User[]) => {
                     expect(users).to.have.lengthOf(1);

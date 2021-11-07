@@ -5,14 +5,15 @@ import {
     IsString,
     ValidateNested
 } from 'class-validator';
-import {Expose, Transform, Type} from "class-transformer";
+import {Expose, Type} from "class-transformer";
 import Purchase from "./Purchase";
 import { ObjectId } from "mongodb";
 import {Model} from "../../src/repository/IMongoRepository";
+import { ExposeId } from '../../src/util';
 
 
 export default class UserEntity implements Model{
-    @Expose()
+    @ExposeId()
     public _id: ObjectId;
     @IsString()
     @Expose()

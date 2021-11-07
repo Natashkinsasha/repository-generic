@@ -1,12 +1,12 @@
 import {
     Collection,
-    FilterQuery,
-    FindAndModifyWriteOpResultObject,
-    FindOneAndUpdateOption,
+    Filter,
+    FindOneAndUpdateOptions,
+    ModifyResult,
     ObjectId,
-    UpdateQuery
+    UpdateFilter,
 } from 'mongodb';
-import { Model, UpdateModel } from '../../IMongoRepository';
+import { Model } from '../../IMongoRepository';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import ICommand from './ICommand';
@@ -14,24 +14,25 @@ import { ClassType } from '../../../util';
 
 
 export default class UpdateByQueryCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private _id: ObjectId, private query: UpdateQuery<M>, private options?: FindOneAndUpdateOption<M>) {
+    constructor(private _id: ObjectId, private query: UpdateFilter<M>, private options?: FindOneAndUpdateOptions) {
     }
 
 
     public async execute(collection: Collection<M>, clazz: ClassType<M>, repositoryOptions: IRepositoryOptions<M, C>): Promise<void | C> {
-        const filter: FilterQuery<Model> = { _id: this._id };
-        const { $inc, ...query } = this.query;
-        const update: UpdateQuery<Model> = {
+        const filter: Filter<Model> = { _id: this._id };
+        const { $inc, $set, ...query } = this.query;
+        const update: any = {
             ...query,
+            $set: $set ? { ...$set, lastUpdatedAt: new Date() } : { lastUpdatedAt: new Date() },
             $inc: $inc ? { version: 1, ...$inc } : { version: 1 },
         };
         return collection
             .findOneAndUpdate(
                 filter,
                 update,
-                { returnOriginal: false, ...this.options }
+                { returnDocument: 'after', ...this.options }
             )
-            .then((result: FindAndModifyWriteOpResultObject<M>) => {
+            .then((result: ModifyResult<M>) => {
                 if (!result.value) {
                     return;
                 }

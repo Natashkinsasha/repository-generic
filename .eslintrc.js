@@ -54,6 +54,7 @@ module.exports = {
         'node/no-extraneous-import': 'off',
 
         'import/newline-after-import': 'off',
-        'import/no-unresolved': 'off'
+        'import/no-unresolved': 'off',
+        'import/no-cycle': 'off'
     }
 }

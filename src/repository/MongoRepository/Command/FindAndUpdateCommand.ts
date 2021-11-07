@@ -1,5 +1,5 @@
 import ICommand from './ICommand';
-import { Collection, UpdateManyOptions, UpdateQuery } from 'mongodb';
+import { Collection, UpdateFilter, UpdateOptions } from 'mongodb';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import { Model, UpdateModel } from '../../IMongoRepository';
 import IMongoSpecification from '../../../specification/IMongoSpecification';
@@ -10,7 +10,7 @@ import { ClassType } from '../../../util';
 
 
 export default class FindAndUpdateCommand<M extends Model, C>implements ICommand<M, void, C> {
-    constructor(private specification: IMongoSpecification<M>, private model: UpdateModel<M>, private options?: UpdateManyOptions) {
+    constructor(private specification: IMongoSpecification<M>, private model: UpdateModel<M>, private options?: UpdateOptions) {
 
     }
 
@@ -19,7 +19,7 @@ export default class FindAndUpdateCommand<M extends Model, C>implements ICommand
         if (repositoryOptions.validateUpdate) {
             await this.validateUpdateModel({ ...this.model, lastUpdatedAt: new Date() }, clazz, repositoryOptions);
         }
-        const update: UpdateQuery<Model> = {
+        const update: UpdateFilter<Model> = {
             $set: { ...this.model, lastUpdatedAt: new Date() },
             $inc: { version: 1 },
         };
@@ -27,7 +27,7 @@ export default class FindAndUpdateCommand<M extends Model, C>implements ICommand
             .updateMany(
                 query,
                 update,
-                this.options,
+                this.options ?? {},
             )
             .then(() => {
                 return;

@@ -1,7 +1,8 @@
 import * as mongodb from "mongodb";
-import * as redis from "redis";
 import * as chai from "chai";
+import * as redis from 'redis-mock';
 import * as chaiAsPromised from 'chai-as-promised';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import UserRepository from "./user/UserRepository";
 import {createCreateUser} from "./util";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
@@ -15,13 +16,16 @@ describe('Test UserRepository#add', () => {
     const {expect} = chai;
     chai.use(chaiAsPromised);
 
+    let mongoMemoryServer: MongoMemoryServer;
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
     let redisClient: redis.RedisClient;
 
 
     before(async () => {
-        mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const mongodbUri = mongoMemoryServer.getUri();
+        mongoClient = await mongodb.MongoClient.connect(mongodbUri)
             .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
@@ -31,6 +35,7 @@ describe('Test UserRepository#add', () => {
 
     after(async () => {
         await mongoClient.close();
+        await mongoMemoryServer.stop();
         redisClient.end(true);
     });
 

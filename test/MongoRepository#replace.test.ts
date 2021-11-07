@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import * as redis from "redis";
+import * as redis from 'redis-mock';
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
@@ -7,23 +7,26 @@ import {createCreateUser, validateUser} from "./util";
 import UserEntity from "./user/UserEntity";
 import * as faker from "faker";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
-import {MongoError, ObjectId} from "mongodb";
 import RepositoryValidationError from "../src/error/RepositoryValidationError";
 import User from "./user/User";
 import {plainToClass} from "class-transformer";
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 
 describe('Test UserRepository#replace', () => {
     chai.use(chaiAsPromised);
     const {expect} = chai;
 
+    let mongoMemoryServer: MongoMemoryServer;
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
     let redisClient: redis.RedisClient;
 
 
     before(async () => {
-        mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const mongodbUri = mongoMemoryServer.getUri();
+        mongoClient = await mongodb.MongoClient.connect(mongodbUri)
             .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
@@ -33,9 +36,9 @@ describe('Test UserRepository#replace', () => {
 
     after(async () => {
         await mongoClient.close();
+        await mongoMemoryServer.stop();
         redisClient.end(true);
     });
-
 
     beforeEach(async () => {
         await MongoDbHelper.dropAll(db);
@@ -57,8 +60,8 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((entity) => {
-                    return userRepository.get(entity._id);
+                .then((_id) => {
+                    return userRepository.get(_id);
                 })
                 .then((user: User) => {
                     const {_id, ...uUser} = user;
@@ -76,8 +79,8 @@ describe('Test UserRepository#replace', () => {
             const newName: any = 1;
             userRepository
                 .add(user)
-                .then((entity) => {
-                    return userRepository.get(entity._id);
+                .then((_id) => {
+                    return userRepository.get(_id);
                 })
                 .then((user: User) => {
                     const {_id, ...uUser} = user;
@@ -94,8 +97,8 @@ describe('Test UserRepository#replace', () => {
             const newName = faker.name.findName();
             userRepository
                 .add(user)
-                .then((entity) => {
-                    return userRepository.get(entity._id);
+                .then((_id) => {
+                    return userRepository.get(_id);
                 })
                 .then(async (user: User) => {
                     await userRepository.delete(user._id);

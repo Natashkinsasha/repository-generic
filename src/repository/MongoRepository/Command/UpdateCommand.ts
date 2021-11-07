@@ -1,11 +1,7 @@
 import ICommand from './ICommand';
 import {
-    Collection,
-    FilterQuery,
-    FindAndModifyWriteOpResultObject,
-    FindOneAndUpdateOption,
-    ObjectId,
-    UpdateQuery
+    Collection, Filter, FindOneAndUpdateOptions, ModifyResult,
+    ObjectId, UpdateFilter,
 } from 'mongodb';
 import MongoRepository from '../MongoRepository';
 import { Model, UpdateModel } from '../../IMongoRepository';
@@ -17,7 +13,7 @@ import { ClassType } from '../../../util';
 
 
 export default class UpdateCommand<M extends Model, C> implements ICommand<M, C | void, C> {
-    constructor(private _id: ObjectId, private model: UpdateModel<M>, private options?: FindOneAndUpdateOption<M>) {
+    constructor(private _id: ObjectId, private model: UpdateModel<M>, private options?: FindOneAndUpdateOptions) {
     }
 
 
@@ -25,8 +21,8 @@ export default class UpdateCommand<M extends Model, C> implements ICommand<M, C 
         if (repositoryOptions.validateUpdate) {
             await this.validateUpdateModel(this.model, clazz);
         }
-        const filter: FilterQuery<Model> = { _id: this._id };
-        const update: UpdateQuery<Model> = {
+        const filter: Filter<Model> = { _id: this._id };
+        const update: UpdateFilter<Model> = {
             $set: { ...this.model, lastUpdatedAt: new Date() },
             $inc: { version: 1 },
         };
@@ -34,9 +30,9 @@ export default class UpdateCommand<M extends Model, C> implements ICommand<M, C 
             .findOneAndUpdate(
                 filter,
                 update,
-                { returnOriginal: false, ...this.options }
+                { returnDocument: 'after', ...this.options }
             )
-            .then((result: FindAndModifyWriteOpResultObject<M>) => {
+            .then((result: ModifyResult<M>) => {
                 if (!result.value) {
                     return;
                 }

@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import * as redis from "redis";
+import * as redis from 'redis-mock';
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import UserRepository from "./user/UserRepository";
@@ -7,21 +7,24 @@ import {createCreateUser, validateUser} from "./util";
 import UserEntity from "./user/UserEntity";
 import MongoDbHelper from "../src/helper/MongoDbHelper";
 import User from "./user/User";
-import { ObjectId } from "mongodb";
 import {plainToClass} from "class-transformer";
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 
 describe('Test UserRepository#get', () => {
     chai.use(chaiAsPromised);
     const {expect} = chai;
 
+    let mongoMemoryServer: MongoMemoryServer;
     let db: mongodb.Db;
     let mongoClient: mongodb.MongoClient;
     let redisClient: redis.RedisClient;
 
 
     before(async () => {
-        mongoClient = await mongodb.MongoClient.connect("mongodb://localhost:27017")
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const mongodbUri = mongoMemoryServer.getUri();
+        mongoClient = await mongodb.MongoClient.connect(mongodbUri)
             .then((client: mongodb.MongoClient) => {
                 db = client.db("test");
                 return client;
@@ -31,6 +34,7 @@ describe('Test UserRepository#get', () => {
 
     after(async () => {
         await mongoClient.close();
+        await mongoMemoryServer.stop();
         redisClient.end(true);
     });
 
@@ -51,14 +55,17 @@ describe('Test UserRepository#get', () => {
             const user = createCreateUser({purchase: [{createdAt:new Date()}]});
             userRepository
                 .add(user)
-                .then((entity) => {
-                    return userRepository.get(entity._id);
+                .then((_id) => {
+                    console.log({_id});
+                    return userRepository.get(_id);
                 })
                 .then((newUser: User) => {
+                    console.log({newUser});
                     validateUser(newUser, {...user, version: 0});
-                    return userRepository.get(new ObjectId(newUser._id));
+                    return userRepository.get(newUser._id);
                 })
                 .then((newUser: User) => {
+                    console.log({newUser});
                     validateUser(newUser, {...user, version: 0});
                     done();
                 })
