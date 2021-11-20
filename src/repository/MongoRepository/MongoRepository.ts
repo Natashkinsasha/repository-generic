@@ -37,8 +37,9 @@ import { ClassType } from '../../util';
 
 export default abstract class MongoRepository<M extends Model, C> implements IMongoRepository<M, C> {
     private readonly options: IRepositoryOptions<M, C>;
+    private readonly db: Db;
 
-    protected constructor(private readonly db: Db, private client: MongoClient, options: IRepositoryOptions<M, C>) {
+    protected constructor(private client: MongoClient, options: IRepositoryOptions<M, C>) {
         this.options = {
             validateAdd: false,
             validateGet: false,
@@ -47,6 +48,7 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
             validatorOptions: {},
             ...options
         };
+        this.db = client.db(this.getDbName());
     }
 
     public transaction<T>(cb: (session: ClientSession) => Promise<T>): Promise<T> {
@@ -131,6 +133,8 @@ export default abstract class MongoRepository<M extends Model, C> implements IMo
     protected getCollection<M extends Model>(): Collection<M> {
         return this.db.collection(this.getCollectionName());
     }
+
+    protected abstract getDbName(): string;
 
     public static async pipe<M extends Model, C>(entity: M, clazz: ClassType<M>, options: IRepositoryOptions<M, C>): Promise<C> {
         const object: M = plainToClass<M, M>(clazz, entity, options.classTransformOptions);

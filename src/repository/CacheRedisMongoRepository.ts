@@ -5,7 +5,7 @@ import { Model } from './IMongoRepository';
 import CacheMongoRepository from './CacheMongoRepository';
 
 export default abstract class CacheRedisMongoRepository<M extends Model, C> extends CacheMongoRepository<M, C> {
-    protected constructor(db: Db, client: MongoClient, redisCacheManage: RedisCacheManager<C>, options: IRepositoryOptions<M, C>) {
-        super(db, client, redisCacheManage, options);
+    protected constructor(client: MongoClient, redisCacheManage: RedisCacheManager<C>, options: IRepositoryOptions<M, C>) {
+        super(client, redisCacheManage, options);
     }
 }

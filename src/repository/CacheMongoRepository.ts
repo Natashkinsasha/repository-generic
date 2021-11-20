@@ -6,8 +6,8 @@ import IRepositoryOptions from './IRepositoryOptions';
 import IMongoSpecification from '../specification/IMongoSpecification';
 
 export default abstract class CacheMongoRepository<M extends Model, C> extends MongoRepository<M, C> {
-    protected constructor(db: Db, client: MongoClient, private cacheManage: ICacheManager<C>, options: IRepositoryOptions<M, C>) {
-        super(db, client, options);
+    protected constructor(client: MongoClient, private cacheManage: ICacheManager<C>, options: IRepositoryOptions<M, C>) {
+        super(client, options);
     }
 
 

@@ -48,7 +48,7 @@ describe('Test UserRepository#updateByQuery', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),});
+            userRepository = new UserRepository(mongoClient, redisClient, {customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),});
         });
 
         it('1', (done) => {
@@ -73,7 +73,7 @@ describe('Test UserRepository#updateByQuery', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
+            userRepository = new UserRepository(mongoClient, redisClient, {
                 validateUpdate: true,
                 customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });

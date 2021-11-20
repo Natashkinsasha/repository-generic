@@ -49,7 +49,7 @@ describe('Test UserRepository#replace', () => {
 
         let userRepository: UserRepository;
         before(() => {
-            userRepository = new UserRepository(db, mongoClient, redisClient, {
+            userRepository = new UserRepository(mongoClient, redisClient, {
                 validateReplace: true,
                 customTransform: (entity: UserEntity) => plainToClass<User, UserEntity>(User, entity),
             });
