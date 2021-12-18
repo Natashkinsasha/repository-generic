@@ -4,7 +4,7 @@ import { Collection, FindCursor, FindOptions, Sort, SortDirection } from 'mongod
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import IMongoSpecification from '../../../specification/IMongoSpecification';
-import { ClassType } from '../../../util';
+import { ClassType, pipe } from '../../../util';
 
 
 export default class FindCommand<M extends Model, C> implements ICommand<M, ReadonlyArray<C>, C> {
@@ -19,7 +19,7 @@ export default class FindCommand<M extends Model, C> implements ICommand<M, Read
         return this.buildLimit(this.buildSkip(this.buildSort(this.buildFind(repositoryOptions, collection, this.specification, this.options), this.sort), this.skip), this.limit)
             .toArray()
             .then((array: ReadonlyArray<M>) => {
-                return Promise.all(array.map((entity: M) => MongoRepository.pipe(entity, clazz, repositoryOptions)));
+                return Promise.all(array.map((entity: M) => pipe(entity, clazz, repositoryOptions)));
             });
     }
 

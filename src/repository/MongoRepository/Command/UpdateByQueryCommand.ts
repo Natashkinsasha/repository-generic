@@ -10,7 +10,7 @@ import { Model } from '../../IMongoRepository';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import ICommand from './ICommand';
-import { ClassType } from '../../../util';
+import { ClassType, pipe } from '../../../util';
 
 
 export default class UpdateByQueryCommand<M extends Model, C> implements ICommand<M, C | void, C> {
@@ -36,7 +36,7 @@ export default class UpdateByQueryCommand<M extends Model, C> implements IComman
                 if (!result.value) {
                     return;
                 }
-                return MongoRepository.pipe(result.value, clazz, repositoryOptions);
+                return pipe(result.value, clazz, repositoryOptions);
             });
     }
 }

@@ -1,8 +1,7 @@
 
-import UserEntity from "./UserEntity";
-import {ClassType} from "../../src/repository/MongoRepository/MongoRepository";
 import RedisCacheManager from "../../src/cache_manager/RedisCacheManager";
 import User from "./User";
+import { ClassType } from '../../src';
 
 
 export default class UserCacheManager extends RedisCacheManager<User> {

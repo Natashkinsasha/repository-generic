@@ -9,7 +9,7 @@ import IRepositoryOptions from '../../IRepositoryOptions';
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import RepositoryValidationError from '../../../error/RepositoryValidationError';
-import { ClassType } from '../../../util';
+import { ClassType, pipe } from '../../../util';
 
 
 export default class UpdateCommand<M extends Model, C> implements ICommand<M, C | void, C> {
@@ -36,7 +36,7 @@ export default class UpdateCommand<M extends Model, C> implements ICommand<M, C 
                 if (!result.value) {
                     return;
                 }
-                return MongoRepository.pipe(result.value, clazz, repositoryOptions);
+                return pipe(result.value, clazz, repositoryOptions);
             });
     }
 

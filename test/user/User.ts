@@ -2,7 +2,7 @@ import {Expose, Type} from "class-transformer";
 import Purchase from "./Purchase";
 import {IsDate, IsNumber, IsString, ValidateNested} from "class-validator";
 import { ObjectId } from "mongodb";
-import { ExposeId } from '../../src/util';
+import { ExposeId } from '../../src';
 
 
 export default class User{

@@ -115,9 +115,9 @@ import { MongoRepository, ClassType } from "repository-generic";
 import User from "./User"
 import UserEntity from "./UserEntity"
 
-class UserRepository extends MongoRepository<UserEntity, User> {
-    constructor(db: Db, client: MongoClient) {
-        super(db, client, {
+class UserRepository extends MongoRepository<UserEntity, User>(UserEntity) {
+    constructor(client: MongoClient) {
+        super(client, {
             version: true,
             createdAt: true,
             lastUpdatedAt: true,
@@ -130,8 +130,8 @@ class UserRepository extends MongoRepository<UserEntity, User> {
         });
     }
 
-    protected getClass(): ClassType<UserEntity> {
-        return UserEntity;
+    protected getDbName(): string {
+        throw 'test';
     }
 }
 

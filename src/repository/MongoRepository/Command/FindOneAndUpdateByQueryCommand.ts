@@ -4,7 +4,7 @@ import { Model } from '../../IMongoRepository';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import IMongoSpecification from '../../../specification/IMongoSpecification';
-import { ClassType } from '../../../util';
+import { ClassType, pipe } from '../../../util';
 
 export default class FindOneAndUpdateByQueryCommand<M extends Model, C> implements ICommand<M, C | void, C> {
     constructor(private readonly specification: IMongoSpecification<M>, private readonly query: UpdateFilter<M>, private readonly options?: FindOneAndUpdateOptions) {}
@@ -27,7 +27,7 @@ export default class FindOneAndUpdateByQueryCommand<M extends Model, C> implemen
                 if (!result.value) {
                     return;
                 }
-                return MongoRepository.pipe(result.value, clazz, repositoryOptions);
+                return pipe(result.value, clazz, repositoryOptions);
             });
     }
 }

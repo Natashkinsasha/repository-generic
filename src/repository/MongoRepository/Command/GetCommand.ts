@@ -3,7 +3,7 @@ import { Collection, Filter, FindOptions, ObjectId } from 'mongodb';
 import MongoRepository from '../MongoRepository';
 import IRepositoryOptions from '../../IRepositoryOptions';
 import { Model } from '../../IMongoRepository';
-import { ClassType } from '../../../util';
+import { ClassType, pipe } from '../../../util';
 
 
 export default class GetCommand<M extends Model, C> implements ICommand<M, C | void, C> {
@@ -15,7 +15,7 @@ export default class GetCommand<M extends Model, C> implements ICommand<M, C | v
             .findOne(query, this.options)
             .then((e: M | null) => {
                 if (e) {
-                    return MongoRepository.pipe(e, clazz, repositoryOptions);
+                    return pipe(e, clazz, repositoryOptions);
                 }
                 return;
             });
